@@ -28,6 +28,7 @@ public class Yanny {
     System.out.println(bottomBorder);
 
     String[] tasks = new String[100];
+    boolean[] taskDone = new boolean[100];
     int taskCount = 0;
     Scanner scanner = new Scanner(System.in);
     while (scanner.hasNextLine()) {
@@ -47,8 +48,31 @@ public class Yanny {
           System.out.println("| OUTPUT > NO TASKS STORED");
         } else {
           for (int i = 0; i < taskCount; i++) {
-            System.out.println("| " + (i + 1) + ". " + tasks[i]);
+            String status = taskDone[i] ? "X" : " ";
+            System.out.println("| " + (i + 1) + ".[" + status + "] " + tasks[i]);
           }
+        }
+        System.out.println(bottomBorder);
+        continue;
+      }
+
+      if (command.equalsIgnoreCase("mark")
+          || command.toLowerCase().startsWith("mark ")) {
+        String taskNumberText = command.length() > 4 ? command.substring(4).trim() : "";
+        int taskIndex = -1;
+        try {
+          taskIndex = Integer.parseInt(taskNumberText) - 1;
+        } catch (NumberFormatException exception) {
+          // Keep the task manager running when the task number is invalid.
+        }
+
+        if (taskIndex >= 0 && taskIndex < taskCount) {
+          taskDone[taskIndex] = true;
+          System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
+          System.out.println("| OUTPUT > [X] " + tasks[taskIndex]);
+        } else {
+          System.out.println("| YANNY_OS :: MARK TASK FAILED");
+          System.out.println("| OUTPUT > INVALID TASK NUMBER");
         }
         System.out.println(bottomBorder);
         continue;
