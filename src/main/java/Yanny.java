@@ -78,6 +78,28 @@ public class Yanny {
         continue;
       }
 
+      if (command.equalsIgnoreCase("unmark")
+          || command.toLowerCase().startsWith("unmark ")) {
+        String taskNumberText = command.length() > 6 ? command.substring(6).trim() : "";
+        int taskIndex = -1;
+        try {
+          taskIndex = Integer.parseInt(taskNumberText) - 1;
+        } catch (NumberFormatException exception) {
+          // Keep the task manager running when the task number is invalid.
+        }
+
+        if (taskIndex >= 0 && taskIndex < taskCount) {
+          taskDone[taskIndex] = false;
+          System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
+          System.out.println("| OUTPUT > [ ] " + tasks[taskIndex]);
+        } else {
+          System.out.println("| YANNY_OS :: UNMARK TASK FAILED");
+          System.out.println("| OUTPUT > INVALID TASK NUMBER");
+        }
+        System.out.println(bottomBorder);
+        continue;
+      }
+
       System.out.println("| YANNY_OS :: COMMAND RECEIVED");
       System.out.println("| INPUT  > " + command);
       if (command.isBlank()) {
