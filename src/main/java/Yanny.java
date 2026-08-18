@@ -27,8 +27,7 @@ public class Yanny {
     System.out.println("| SYSTEM READY. Awaiting command...");
     System.out.println(bottomBorder);
 
-    String[] tasks = new String[100];
-    boolean[] taskDone = new boolean[100];
+    Task[] tasks = new Task[100];
     int taskCount = 0;
     Scanner scanner = new Scanner(System.in);
     while (scanner.hasNextLine()) {
@@ -48,8 +47,8 @@ public class Yanny {
           System.out.println("| OUTPUT > NO TASKS STORED");
         } else {
           for (int i = 0; i < taskCount; i++) {
-            String status = taskDone[i] ? "X" : " ";
-            System.out.println("| " + (i + 1) + ".[" + status + "] " + tasks[i]);
+            System.out.println("| " + (i + 1) + ".[" + tasks[i].getStatusIcon() + "] "
+                + tasks[i].getDescription());
           }
         }
         System.out.println(bottomBorder);
@@ -67,9 +66,9 @@ public class Yanny {
         }
 
         if (taskIndex >= 0 && taskIndex < taskCount) {
-          taskDone[taskIndex] = true;
+          tasks[taskIndex].markAsDone();
           System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
-          System.out.println("| OUTPUT > [X] " + tasks[taskIndex]);
+          System.out.println("| OUTPUT > [X] " + tasks[taskIndex].getDescription());
         } else {
           System.out.println("| YANNY_OS :: MARK TASK FAILED");
           System.out.println("| OUTPUT > INVALID TASK NUMBER");
@@ -89,9 +88,9 @@ public class Yanny {
         }
 
         if (taskIndex >= 0 && taskIndex < taskCount) {
-          taskDone[taskIndex] = false;
+          tasks[taskIndex].markAsNotDone();
           System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
-          System.out.println("| OUTPUT > [ ] " + tasks[taskIndex]);
+          System.out.println("| OUTPUT > [ ] " + tasks[taskIndex].getDescription());
         } else {
           System.out.println("| YANNY_OS :: UNMARK TASK FAILED");
           System.out.println("| OUTPUT > INVALID TASK NUMBER");
@@ -107,7 +106,7 @@ public class Yanny {
       } else if (taskCount == tasks.length) {
         System.out.println("| OUTPUT > TASK STORAGE FULL");
       } else {
-        tasks[taskCount] = command;
+        tasks[taskCount] = new Task(command);
         taskCount++;
         System.out.println("| OUTPUT > ADDED: " + command);
       }
