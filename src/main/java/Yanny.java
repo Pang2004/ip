@@ -1,5 +1,8 @@
 import java.util.Scanner;
 
+/**
+ * A simple retro-style command-line task manager.
+ */
 public class Yanny {
   /**
    * Starts Yanny and processes commands entered by the user.
@@ -24,6 +27,8 @@ public class Yanny {
     System.out.println("| SYSTEM READY. Awaiting command...");
     System.out.println(bottomBorder);
 
+    String[] tasks = new String[100];
+    int taskCount = 0;
     Scanner scanner = new Scanner(System.in);
     while (scanner.hasNextLine()) {
       String command = scanner.nextLine();
@@ -36,9 +41,30 @@ public class Yanny {
         break;
       }
 
+      if (command.equalsIgnoreCase("list")) {
+        System.out.println("| YANNY_OS :: TASK LIST");
+        if (taskCount == 0) {
+          System.out.println("| OUTPUT > NO TASKS STORED");
+        } else {
+          for (int i = 0; i < taskCount; i++) {
+            System.out.println("| " + (i + 1) + ". " + tasks[i]);
+          }
+        }
+        System.out.println(bottomBorder);
+        continue;
+      }
+
       System.out.println("| YANNY_OS :: COMMAND RECEIVED");
       System.out.println("| INPUT  > " + command);
-      System.out.println("| OUTPUT > " + command);
+      if (command.isBlank()) {
+        System.out.println("| OUTPUT > PLEASE ENTER A TASK");
+      } else if (taskCount == tasks.length) {
+        System.out.println("| OUTPUT > TASK STORAGE FULL");
+      } else {
+        tasks[taskCount] = command;
+        taskCount++;
+        System.out.println("| OUTPUT > ADDED: " + command);
+      }
       System.out.println(bottomBorder);
     }
   }
