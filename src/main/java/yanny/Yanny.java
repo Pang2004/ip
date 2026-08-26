@@ -29,7 +29,7 @@ public class Yanny {
         System.out.println("| SYSTEM READY. Awaiting command...");
         System.out.println(BORDER);
 
-        Task[] tasks = new Task[MAX_TASKS];
+        Todo[] tasks = new Todo[MAX_TASKS];
         int taskCount = 0;
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -49,8 +49,7 @@ public class Yanny {
                     System.out.println("| OUTPUT > NO TASKS STORED");
                 } else {
                     for (int i = 0; i < taskCount; i++) {
-                        System.out.println("| " + (i + 1) + ".[" + tasks[i].getStatusIcon() + "] "
-                                + tasks[i].getDescription());
+                        System.out.println("| " + (i + 1) + ". " + tasks[i]);
                     }
                 }
                 System.out.println(BORDER);
@@ -103,14 +102,30 @@ public class Yanny {
 
             System.out.println("| YANNY_OS :: COMMAND RECEIVED");
             System.out.println("| INPUT  > " + command);
-            if (command.isBlank()) {
+            if (command.equalsIgnoreCase("todo")
+                    || command.toLowerCase().startsWith("todo ")) {
+                String description = command.length() > 4 ? command.substring(4).trim() : "";
+                if (description.isBlank()) {
+                    System.out.println("| OUTPUT > TODO TASK DESCRIPTION CANNOT BE BLANK");
+                } else if (taskCount == tasks.length) {
+                    System.out.println("| OUTPUT > TASK STORAGE FULL");
+                } else {
+                    tasks[taskCount] = new Todo(description);
+                    taskCount++;
+                    System.out.println("| OUTPUT > ADDED: " + tasks[taskCount - 1]);
+                    System.out.println("| OUTPUT > Now you have " + taskCount
+                            + " tasks in the list.");
+                }
+            } else if (command.isBlank()) {
                 System.out.println("| OUTPUT > PLEASE ENTER A TASK");
             } else if (taskCount == tasks.length) {
                 System.out.println("| OUTPUT > TASK STORAGE FULL");
             } else {
-                tasks[taskCount] = new Task(command);
+                tasks[taskCount] = new Todo(command);
                 taskCount++;
-                System.out.println("| OUTPUT > ADDED: " + command);
+                System.out.println("| OUTPUT > ADDED: " + tasks[taskCount - 1]);
+                System.out.println("| OUTPUT > CURRENT TASK COUNT: " + taskCount
+                        + " tasks in the list.");
             }
             System.out.println(BORDER);
         }
