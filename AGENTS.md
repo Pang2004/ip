@@ -35,6 +35,26 @@ Use the skill when creating, editing, reviewing, or refactoring any `.java` file
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## UI testing after code changes
+
+After every code update, inspect `test/ui-test-plan.md` and update it when the
+change adds or modifies user-visible behaviour, commands, validation, or
+output. Then invoke the project-specific `test-ui` skill to run the documented
+CLI test cases and display the console input/output record. Do this before
+handing the change back to the user, and report any failed test with its actual
+and expected output.
+
+Use the skill's standard runner from the repository root:
+
+```bash
+python3 .codex/skills/test-ui/scripts/run_ui_tests.py \
+  test/ui-test-plan.md \
+  --program "java -cp out yanny.Yanny"
+```
+
+Compile the application with Java 25 before invoking the runner when the
+compiled output is not current.
+
 ## Git
 
 All future commit messages and branch names must follow the project-specific

@@ -30,3 +30,5 @@ text-ui-test/EXPECTED-UNIX.TXT
 !.codex/skills/seedu-java-coding-standard/**
 !.codex/skills/seedu-git-standard/
 !.codex/skills/seedu-git-standard/**
+!.codex/skills/test-ui/
+!.codex/skills/test-ui/**
