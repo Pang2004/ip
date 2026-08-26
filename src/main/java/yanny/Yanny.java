@@ -22,6 +22,14 @@ public class Yanny {
      * @param args command-line arguments, which are not used.
      */
     public static void main(String[] args) {
+        displayStartupScreen();
+        Task[] tasks = new Task[MAX_TASKS];
+        Scanner scanner = new Scanner(System.in);
+        runCommandLoop(scanner, tasks);
+    }
+
+    /** Displays the startup message for Yanny. */
+    private static void displayStartupScreen() {
         System.out.println(BORDER);
         System.out.println("| YANNY_OS :: BOOT SEQUENCE COMPLETE");
         System.out.println(BANNER);
@@ -29,96 +37,152 @@ public class Yanny {
         System.out.println("| GREETINGS I'M YANNY.");
         System.out.println("| SYSTEM READY. AWAITING COMMAND...");
         System.out.println(BORDER);
+    }
 
-        Task[] tasks = new Task[MAX_TASKS];
+    /**
+     * Reads and processes commands until the user exits or input ends.
+     *
+     * @param scanner the source of user commands.
+     * @param tasks the task storage used by the application.
+     */
+    private static void runCommandLoop(Scanner scanner, Task[] tasks) {
         int taskCount = 0;
-        Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
             System.out.println(BORDER);
 
             if (command.equalsIgnoreCase("bye")) {
-                System.out.println("| YANNY_OS :: SHUTDOWN INITIATED");
-                System.out.println("| OUTPUT > Bye. Hope to see you again!");
-                System.out.println(BORDER);
+                displayShutdownMessage();
                 break;
             }
 
-            if (command.equalsIgnoreCase("list")) {
-                System.out.println("| YANNY_OS :: TASK LIST");
-                if (taskCount == 0) {
-                    System.out.println("| OUTPUT > NO TASKS STORED");
-                } else {
-                    for (int i = 0; i < taskCount; i++) {
-                        System.out.println("| " + (i + 1) + ". " + tasks[i]);
-                    }
-                }
-                System.out.println(BORDER);
-                continue;
-            }
-
-            if (command.equalsIgnoreCase("mark")
-                    || command.toLowerCase().startsWith("mark ")) {
-                String taskNumberText = command.length() > 4 ? command.substring(4).trim() : "";
-                int taskIndex = -1;
-                try {
-                    taskIndex = Integer.parseInt(taskNumberText) - 1;
-                } catch (NumberFormatException exception) {
-                    // Keep the task manager running when the task number is invalid.
-                }
-
-                if (taskIndex >= 0 && taskIndex < taskCount) {
-                    tasks[taskIndex].markAsDone();
-                    System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
-                    System.out.println("| OUTPUT > [X] " + tasks[taskIndex].getDescription());
-                } else {
-                    System.out.println("| YANNY_OS :: MARK TASK FAILED");
-                    System.out.println("| OUTPUT > INVALID TASK NUMBER");
-                }
-                System.out.println(BORDER);
-                continue;
-            }
-
-            if (command.equalsIgnoreCase("unmark")
-                    || command.toLowerCase().startsWith("unmark ")) {
-                String taskNumberText = command.length() > 6 ? command.substring(6).trim() : "";
-                int taskIndex = -1;
-                try {
-                    taskIndex = Integer.parseInt(taskNumberText) - 1;
-                } catch (NumberFormatException exception) {
-                    // Keep the task manager running when the task number is invalid.
-                }
-
-                if (taskIndex >= 0 && taskIndex < taskCount) {
-                    tasks[taskIndex].markAsNotDone();
-                    System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
-                    System.out.println("| OUTPUT > [ ] " + tasks[taskIndex].getDescription());
-                } else {
-                    System.out.println("| YANNY_OS :: UNMARK TASK FAILED");
-                    System.out.println("| OUTPUT > INVALID TASK NUMBER");
-                }
-                System.out.println(BORDER);
-                continue;
-            }
-
-            System.out.println("| YANNY_OS :: COMMAND RECEIVED");
-            System.out.println("| INPUT  > " + command);
-            try {
-                Task task = parseTaskCommand(command);
-                if (taskCount == tasks.length) {
-                    System.out.println("| OUTPUT > TASK STORAGE FULL");
-                } else {
-                    tasks[taskCount] = task;
-                    taskCount++;
-                    System.out.println("| OUTPUT > ADDED: " + tasks[taskCount - 1]);
-                    System.out.println("| OUTPUT > CURRENT TASK COUNT: " + taskCount);
-                }
-            } catch (IllegalArgumentException exception) {
-                System.out.println("| YANNY_OS :: COMMAND REJECTED");
-                System.out.println("| OUTPUT > " + exception.getMessage());
-            }
-            System.out.println(BORDER);
+            taskCount = processCommand(command, tasks, taskCount);
         }
+    }
+
+    /**
+     * Processes a command other than {@code bye}.
+     *
+     * @param command the command entered by the user.
+     * @param tasks the task storage used by the application.
+     * @param taskCount the number of tasks currently stored.
+     * @return the updated number of stored tasks.
+     */
+    private static int processCommand(String command, Task[] tasks, int taskCount) {
+        if (command.equalsIgnoreCase("list")) {
+            handleListCommand(tasks, taskCount);
+            return taskCount;
+        }
+
+        if (command.equalsIgnoreCase("mark")
+                || command.toLowerCase().startsWith("mark ")) {
+            handleMarkCommand(command, tasks, taskCount);
+            return taskCount;
+        }
+
+        if (command.equalsIgnoreCase("unmark")
+                || command.toLowerCase().startsWith("unmark ")) {
+            handleUnmarkCommand(command, tasks, taskCount);
+            return taskCount;
+        }
+
+        return handleAddCommand(command, tasks, taskCount);
+    }
+
+    /** Displays the current tasks and their completion status. */
+    private static void handleListCommand(Task[] tasks, int taskCount) {
+        System.out.println("| YANNY_OS :: TASK LIST");
+        if (taskCount == 0) {
+            System.out.println("| OUTPUT > NO TASKS STORED");
+        } else {
+            for (int i = 0; i < taskCount; i++) {
+                System.out.println("| " + (i + 1) + ". " + tasks[i]);
+            }
+        }
+        System.out.println(BORDER);
+    }
+
+    /** Handles a command to mark a task as done. */
+    private static void handleMarkCommand(String command, Task[] tasks, int taskCount) {
+        int taskIndex = parseTaskIndex(command, "mark");
+        if (taskIndex >= 0 && taskIndex < taskCount) {
+            tasks[taskIndex].markAsDone();
+            System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
+            System.out.println("| OUTPUT > [X] " + tasks[taskIndex].getDescription());
+        } else {
+            System.out.println("| YANNY_OS :: MARK TASK FAILED");
+            System.out.println("| OUTPUT > INVALID TASK NUMBER");
+        }
+        System.out.println(BORDER);
+    }
+
+    /** Handles a command to mark a task as not done. */
+    private static void handleUnmarkCommand(String command, Task[] tasks, int taskCount) {
+        int taskIndex = parseTaskIndex(command, "unmark");
+        if (taskIndex >= 0 && taskIndex < taskCount) {
+            tasks[taskIndex].markAsNotDone();
+            System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
+            System.out.println("| OUTPUT > [ ] " + tasks[taskIndex].getDescription());
+        } else {
+            System.out.println("| YANNY_OS :: UNMARK TASK FAILED");
+            System.out.println("| OUTPUT > INVALID TASK NUMBER");
+        }
+        System.out.println(BORDER);
+    }
+
+    /**
+     * Adds a task from a command and displays the result.
+     *
+     * @param command the command entered by the user.
+     * @param tasks the task storage used by the application.
+     * @param taskCount the number of tasks currently stored.
+     * @return the updated number of stored tasks.
+     */
+    private static int handleAddCommand(String command, Task[] tasks, int taskCount) {
+        System.out.println("| YANNY_OS :: COMMAND RECEIVED");
+        System.out.println("| INPUT  > " + command);
+        try {
+            Task task = parseTaskCommand(command);
+            if (taskCount == tasks.length) {
+                System.out.println("| OUTPUT > TASK STORAGE FULL");
+            } else {
+                tasks[taskCount] = task;
+                int updatedTaskCount = taskCount + 1;
+                System.out.println("| OUTPUT > ADDED: " + tasks[taskCount]);
+                System.out.println("| OUTPUT > CURRENT TASK COUNT: " + updatedTaskCount);
+                taskCount = updatedTaskCount;
+            }
+        } catch (IllegalArgumentException exception) {
+            System.out.println("| YANNY_OS :: COMMAND REJECTED");
+            System.out.println("| OUTPUT > " + exception.getMessage());
+        }
+        System.out.println(BORDER);
+        return taskCount;
+    }
+
+    /**
+     * Parses a one-based task number from a mark or unmark command.
+     *
+     * @param command the mark or unmark command.
+     * @param commandName the command keyword.
+     * @return the zero-based task index, or {@code -1} for invalid input.
+     */
+    private static int parseTaskIndex(String command, String commandName) {
+        String taskNumberText = command.length() > commandName.length()
+                ? command.substring(commandName.length()).trim() : "";
+        try {
+            return Integer.parseInt(taskNumberText) - 1;
+        } catch (NumberFormatException exception) {
+            // Keep the task manager running when the task number is invalid.
+            return -1;
+        }
+    }
+
+    /** Displays the shutdown message for Yanny. */
+    private static void displayShutdownMessage() {
+        System.out.println("| YANNY_OS :: SHUTDOWN INITIATED");
+        System.out.println("| OUTPUT > Bye. Hope to see you again!");
+        System.out.println(BORDER);
     }
 
     /**
