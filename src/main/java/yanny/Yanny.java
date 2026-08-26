@@ -29,7 +29,7 @@ public class Yanny {
         System.out.println("| SYSTEM READY. Awaiting command...");
         System.out.println(BORDER);
 
-        Todo[] tasks = new Todo[MAX_TASKS];
+        Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {

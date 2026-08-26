@@ -38,6 +38,15 @@ public class Task {
         return description;
     }
 
+    /**
+     * Returns the icon representing this task type.
+     *
+     * @return the task type icon.
+     */
+    public String getTypeIcon() {
+        return "T";
+    }
+
     /** Marks this task as done. */
     public void markAsDone() {
         isDone = true;
@@ -46,5 +55,15 @@ public class Task {
     /** Marks this task as not done. */
     public void markAsNotDone() {
         isDone = false;
+    }
+
+    /**
+     * Returns this task in a format suitable for displaying to the user.
+     *
+     * @return the formatted task.
+     */
+    @Override
+    public String toString() {
+        return "[" + getTypeIcon() + "][" + getStatusIcon() + "] " + description;
     }
 }
