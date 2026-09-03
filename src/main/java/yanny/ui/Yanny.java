@@ -9,7 +9,6 @@ import yanny.exception.YannyException;
  * A simple retro-style command-line task manager.
  */
 public class Yanny {
-    private static final int MAX_TASKS = 100;
     private static final String BORDER = "+------------------------------------------+";
     private static final String COMMAND_REJECTED = "| YANNY_OS :: COMMAND REJECTED";
     private static final String ERROR_PREFIX = "| ERROR > ";
@@ -27,7 +26,7 @@ public class Yanny {
      */
     public static void main(String[] args) {
         displayStartupScreen();
-        CommandProcessor commandProcessor = new CommandProcessor(MAX_TASKS);
+        CommandProcessor commandProcessor = new CommandProcessor();
         Scanner scanner = new Scanner(System.in);
         runCommandLoop(scanner, commandProcessor);
     }
