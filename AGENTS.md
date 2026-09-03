@@ -47,6 +47,9 @@ Yanny uses the following package structure:
 * `yanny.task` contains `Task`, `Todo`, `Deadline`, and `Event` domain classes.
 * `yanny.exception` contains `YannyException` for expected user-input errors.
 
+`CommandProcessor` stores tasks in a dynamically sized list, so Yanny does not
+impose an artificial maximum number of tasks.
+
 Compile all source files from the repository root with:
 
 ```bash

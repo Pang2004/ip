@@ -1,5 +1,7 @@
 package yanny.command;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import yanny.exception.YannyException;
@@ -17,17 +19,13 @@ public class CommandProcessor {
     private static final String DEADLINE_USAGE = "DEADLINE <DESCRIPTION> /BY <DATE OR TIME>";
     private static final String EVENT_USAGE = "EVENT <DESCRIPTION> /FROM <START> /TO <END>";
 
-    private final Task[] tasks;
-    private int taskCount;
+    private final List<Task> tasks;
 
     /**
-     * Creates a command processor with a fixed task capacity.
-     *
-     * @param maxTasks the maximum number of tasks that can be stored.
+     * Creates a command processor with dynamically sized task storage.
      */
-    public CommandProcessor(int maxTasks) {
-        tasks = new Task[maxTasks];
-        taskCount = 0;
+    public CommandProcessor() {
+        tasks = new ArrayList<>();
     }
 
     /**
@@ -60,11 +58,11 @@ public class CommandProcessor {
     /** Displays the current tasks and their completion status. */
     private void handleListCommand() {
         System.out.println("| YANNY_OS :: TASK LIST");
-        if (taskCount == 0) {
+        if (tasks.isEmpty()) {
             System.out.println("| OUTPUT > NO TASKS STORED");
         } else {
-            for (int i = 0; i < taskCount; i++) {
-                System.out.println("| " + (i + 1) + ". " + tasks[i]);
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println("| " + (i + 1) + ". " + tasks.get(i));
             }
         }
     }
@@ -73,40 +71,36 @@ public class CommandProcessor {
     private void handleMarkCommand(String command) throws YannyException {
         int taskIndex = parseTaskIndex(command, "mark");
         validateTaskIndex(taskIndex, "MARK");
-        tasks[taskIndex].markAsDone();
+        Task task = tasks.get(taskIndex);
+        task.markAsDone();
         System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
-        System.out.println("| OUTPUT > [X] " + tasks[taskIndex].getDescription());
+        System.out.println("| OUTPUT > [X] " + task.getDescription());
     }
 
     /** Handles a command to mark a task as not done. */
     private void handleUnmarkCommand(String command) throws YannyException {
         int taskIndex = parseTaskIndex(command, "unmark");
         validateTaskIndex(taskIndex, "UNMARK");
-        tasks[taskIndex].markAsNotDone();
+        Task task = tasks.get(taskIndex);
+        task.markAsNotDone();
         System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
-        System.out.println("| OUTPUT > [ ] " + tasks[taskIndex].getDescription());
+        System.out.println("| OUTPUT > [ ] " + task.getDescription());
     }
 
     /**
      * Adds a task from a command and displays the result.
      *
      * @param command the command entered by the user.
-     * @throws YannyException if the command contains invalid user input or task storage is full.
+     * @throws YannyException if the command contains invalid user input.
      */
     private void handleAddCommand(String command) throws YannyException {
         System.out.println("| YANNY_OS :: COMMAND RECEIVED");
         String inputDisplay = command.isBlank() ? "" : " " + command;
         System.out.println("| INPUT  >" + inputDisplay);
         Task task = parseTaskCommand(command);
-        if (taskCount == tasks.length) {
-            throw new YannyException("TASK STORAGE FULL. MAXIMUM OF " + tasks.length + " TASKS REACHED");
-        }
-
-        tasks[taskCount] = task;
-        int updatedTaskCount = taskCount + 1;
-        System.out.println("| OUTPUT > ADDED: " + tasks[taskCount]);
-        System.out.println("| OUTPUT > CURRENT TASK COUNT: " + updatedTaskCount);
-        taskCount = updatedTaskCount;
+        tasks.add(task);
+        System.out.println("| OUTPUT > ADDED: " + task);
+        System.out.println("| OUTPUT > CURRENT TASK COUNT: " + tasks.size());
     }
 
     /**
@@ -147,11 +141,11 @@ public class CommandProcessor {
      * @throws YannyException if no tasks exist or the index is out of range.
      */
     private void validateTaskIndex(int taskIndex, String commandName) throws YannyException {
-        if (taskCount == 0) {
+        if (tasks.isEmpty()) {
             throw new YannyException("NO TASKS AVAILABLE. ADD A TASK BEFORE USING " + commandName + ".");
         }
-        if (taskIndex >= taskCount) {
-            throw new YannyException("TASK NUMBER OUT OF RANGE. USE A NUMBER FROM 1 TO " + taskCount + ".");
+        if (taskIndex >= tasks.size()) {
+            throw new YannyException("TASK NUMBER OUT OF RANGE. USE A NUMBER FROM 1 TO " + tasks.size() + ".");
         }
     }
 
