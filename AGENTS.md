@@ -40,11 +40,14 @@ Ensure that Java 25 is used when running the application or build tasks. On macO
 Keep user-visible command errors consistent with Yanny's terminal style:
 
 * Keep the `| YANNY_OS :: COMMAND REJECTED` status line for rejected commands.
-* Put the specific error on the next line using `| ERROR > ` followed by an uppercase message.
-* Use `TODO DESCRIPTION CANNOT BE EMPTY` when a `todo` command has no description.
-* Use `UNKNOWN COMMAND DETECTED` when the input is not a supported command.
-* Handle validation failures through exceptions and let the command handler format
-  the exception message; do not print stack traces to the user.
+* Put the specific error on the next line using `| ERROR > ` followed by an uppercase,
+  actionable message.
+* Begin an empty-todo error with `TODO DESCRIPTION CANNOT BE EMPTY` and include the
+  correct `TODO <DESCRIPTION>` syntax.
+* Begin an unsupported-input error with `UNKNOWN COMMAND DETECTED` and list the
+  supported commands.
+* Represent expected user-input failures with `YannyException`. Catch it at the
+  command-loop boundary and do not print stack traces to the user.
 
 ## UI testing after code changes
 
