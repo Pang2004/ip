@@ -154,7 +154,7 @@ public class Yanny {
             }
         } catch (IllegalArgumentException exception) {
             System.out.println("| YANNY_OS :: COMMAND REJECTED");
-            System.out.println("| OUTPUT > " + exception.getMessage());
+            System.out.println("| ERROR > " + exception.getMessage());
         }
         System.out.println(BORDER);
         return taskCount;
@@ -190,7 +190,8 @@ public class Yanny {
      *
      * @param command the complete command entered by the user.
      * @return the parsed task.
-     * @throws IllegalArgumentException if the command contains invalid task data.
+     * @throws IllegalArgumentException if the command is unrecognized or contains
+     *                                  invalid task data.
      */
     private static Task parseTaskCommand(String command) throws IllegalArgumentException {
         if (command.isBlank()) {
@@ -210,7 +211,7 @@ public class Yanny {
             return parseEvent(command.substring(5));
         }
 
-        return new Todo(command);
+        throw new IllegalArgumentException("UNKNOWN COMMAND DETECTED");
     }
 
     /**
@@ -300,6 +301,9 @@ public class Yanny {
             throws IllegalArgumentException {
         String description = text.trim();
         if (description.isBlank()) {
+            if (taskType.equals("TODO")) {
+                throw new IllegalArgumentException("TODO DESCRIPTION CANNOT BE EMPTY");
+            }
             throw new IllegalArgumentException(taskType + " TASK DESCRIPTION CANNOT BE BLANK");
         }
         return description;

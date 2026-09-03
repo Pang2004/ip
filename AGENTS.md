@@ -35,6 +35,17 @@ Use the skill when creating, editing, reviewing, or refactoring any `.java` file
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## Yanny command output format
+
+Keep user-visible command errors consistent with Yanny's terminal style:
+
+* Keep the `| YANNY_OS :: COMMAND REJECTED` status line for rejected commands.
+* Put the specific error on the next line using `| ERROR > ` followed by an uppercase message.
+* Use `TODO DESCRIPTION CANNOT BE EMPTY` when a `todo` command has no description.
+* Use `UNKNOWN COMMAND DETECTED` when the input is not a supported command.
+* Handle validation failures through exceptions and let the command handler format
+  the exception message; do not print stack traces to the user.
+
 ## UI testing after code changes
 
 After every code update, inspect `test/ui-test-plan.md` and update it when the

@@ -165,3 +165,51 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 | OUTPUT > Bye. Hope to see you again!
 +------------------------------------------+
 ```
+
+## Test case: Reject incomplete and unknown commands
+
+### Aim
+
+Verify that an empty todo description and an unrecognized command are rejected
+without adding tasks.
+
+### Inputs
+
+```text
+todo
+blah
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > TODO DESCRIPTION CANNOT BE EMPTY
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > blah
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > UNKNOWN COMMAND DETECTED
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
