@@ -1,4 +1,4 @@
-package yanny;
+package yanny.exception;
 
 /**
  * Represents an expected error caused by invalid user input.

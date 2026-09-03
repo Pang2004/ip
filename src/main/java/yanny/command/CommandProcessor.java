@@ -1,109 +1,64 @@
-package yanny;
+package yanny.command;
 
 import java.util.Locale;
-import java.util.Scanner;
+
+import yanny.exception.YannyException;
+import yanny.task.Deadline;
+import yanny.task.Event;
+import yanny.task.Task;
+import yanny.task.Todo;
 
 /**
- * A simple retro-style command-line task manager.
+ * Processes user commands and manages the tasks stored by Yanny.
  */
-public class Yanny {
-    private static final int MAX_TASKS = 100;
-    private static final String BORDER = "+------------------------------------------+";
-    private static final String COMMAND_REJECTED = "| YANNY_OS :: COMMAND REJECTED";
-    private static final String ERROR_PREFIX = "| ERROR > ";
+public class CommandProcessor {
     private static final String SUPPORTED_COMMANDS = "TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, OR BYE";
     private static final String TODO_USAGE = "TODO <DESCRIPTION>";
     private static final String DEADLINE_USAGE = "DEADLINE <DESCRIPTION> /BY <DATE OR TIME>";
     private static final String EVENT_USAGE = "EVENT <DESCRIPTION> /FROM <START> /TO <END>";
-    private static final String BANNER = "____    ____  ___      .__   __. .__   __. ____    ____\n"
-            + "\\   \\  /   / /   \\     |  \\ |  | |  \\ |  | \\   \\  /   /\n"
-            + " \\   \\/   / /  ^  \\    |   \\|  | |   \\|  |  \\   \\/   /\n"
-            + "  \\_    _/ /  /_\\  \\   |  . `  | |  . `  |   \\_    _/\n"
-            + "    |  |  /  _____  \\  |  |\\   | |  |\\   |     |  |\n"
-            + "    |__| /__/     \\__\\ |__| \\__| |__| \\__|     |__|";
+
+    private final Task[] tasks;
+    private int taskCount;
 
     /**
-     * Starts Yanny and processes commands entered by the user.
+     * Creates a command processor with a fixed task capacity.
      *
-     * @param args command-line arguments, which are not used.
+     * @param maxTasks the maximum number of tasks that can be stored.
      */
-    public static void main(String[] args) {
-        displayStartupScreen();
-        Task[] tasks = new Task[MAX_TASKS];
-        Scanner scanner = new Scanner(System.in);
-        runCommandLoop(scanner, tasks);
-    }
-
-    /** Displays the startup message for Yanny. */
-    private static void displayStartupScreen() {
-        System.out.println(BORDER);
-        System.out.println("| YANNY_OS :: BOOT SEQUENCE COMPLETE");
-        System.out.println(BANNER);
-        System.out.println();
-        System.out.println("| GREETINGS I'M YANNY.");
-        System.out.println("| SYSTEM READY. AWAITING COMMAND...");
-        System.out.println(BORDER);
+    public CommandProcessor(int maxTasks) {
+        tasks = new Task[maxTasks];
+        taskCount = 0;
     }
 
     /**
-     * Reads and processes commands until the user exits or input ends.
-     *
-     * @param scanner the source of user commands.
-     * @param tasks the task storage used by the application.
-     */
-    private static void runCommandLoop(Scanner scanner, Task[] tasks) {
-        int taskCount = 0;
-        while (scanner.hasNextLine()) {
-            String command = scanner.nextLine();
-            System.out.println(BORDER);
-
-            if (command.equalsIgnoreCase("bye")) {
-                displayShutdownMessage();
-                break;
-            }
-
-            try {
-                taskCount = processCommand(command, tasks, taskCount);
-            } catch (YannyException exception) {
-                displayCommandError(exception);
-            }
-            System.out.println(BORDER);
-        }
-    }
-
-    /**
-     * Processes a command other than {@code bye}.
+     * Processes one command and updates the stored tasks when necessary.
      *
      * @param command the command entered by the user.
-     * @param tasks the task storage used by the application.
-     * @param taskCount the number of tasks currently stored.
-     * @return the updated number of stored tasks.
      * @throws YannyException if the command contains invalid user input.
      */
-    private static int processCommand(String command, Task[] tasks, int taskCount)
-            throws YannyException {
+    public void processCommand(String command) throws YannyException {
         if (command.equalsIgnoreCase("list")) {
-            handleListCommand(tasks, taskCount);
-            return taskCount;
+            handleListCommand();
+            return;
         }
 
         if (command.equalsIgnoreCase("mark")
                 || command.toLowerCase(Locale.ROOT).startsWith("mark ")) {
-            handleMarkCommand(command, tasks, taskCount);
-            return taskCount;
+            handleMarkCommand(command);
+            return;
         }
 
         if (command.equalsIgnoreCase("unmark")
                 || command.toLowerCase(Locale.ROOT).startsWith("unmark ")) {
-            handleUnmarkCommand(command, tasks, taskCount);
-            return taskCount;
+            handleUnmarkCommand(command);
+            return;
         }
 
-        return handleAddCommand(command, tasks, taskCount);
+        handleAddCommand(command);
     }
 
     /** Displays the current tasks and their completion status. */
-    private static void handleListCommand(Task[] tasks, int taskCount) {
+    private void handleListCommand() {
         System.out.println("| YANNY_OS :: TASK LIST");
         if (taskCount == 0) {
             System.out.println("| OUTPUT > NO TASKS STORED");
@@ -115,20 +70,18 @@ public class Yanny {
     }
 
     /** Handles a command to mark a task as done. */
-    private static void handleMarkCommand(String command, Task[] tasks, int taskCount)
-            throws YannyException {
+    private void handleMarkCommand(String command) throws YannyException {
         int taskIndex = parseTaskIndex(command, "mark");
-        validateTaskIndex(taskIndex, taskCount, "MARK");
+        validateTaskIndex(taskIndex, "MARK");
         tasks[taskIndex].markAsDone();
         System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
         System.out.println("| OUTPUT > [X] " + tasks[taskIndex].getDescription());
     }
 
     /** Handles a command to mark a task as not done. */
-    private static void handleUnmarkCommand(String command, Task[] tasks, int taskCount)
-            throws YannyException {
+    private void handleUnmarkCommand(String command) throws YannyException {
         int taskIndex = parseTaskIndex(command, "unmark");
-        validateTaskIndex(taskIndex, taskCount, "UNMARK");
+        validateTaskIndex(taskIndex, "UNMARK");
         tasks[taskIndex].markAsNotDone();
         System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
         System.out.println("| OUTPUT > [ ] " + tasks[taskIndex].getDescription());
@@ -138,13 +91,9 @@ public class Yanny {
      * Adds a task from a command and displays the result.
      *
      * @param command the command entered by the user.
-     * @param tasks the task storage used by the application.
-     * @param taskCount the number of tasks currently stored.
-     * @return the updated number of stored tasks.
      * @throws YannyException if the command contains invalid user input or task storage is full.
      */
-    private static int handleAddCommand(String command, Task[] tasks, int taskCount)
-        throws YannyException {
+    private void handleAddCommand(String command) throws YannyException {
         System.out.println("| YANNY_OS :: COMMAND RECEIVED");
         String inputDisplay = command.isBlank() ? "" : " " + command;
         System.out.println("| INPUT  >" + inputDisplay);
@@ -158,7 +107,6 @@ public class Yanny {
         System.out.println("| OUTPUT > ADDED: " + tasks[taskCount]);
         System.out.println("| OUTPUT > CURRENT TASK COUNT: " + updatedTaskCount);
         taskCount = updatedTaskCount;
-        return taskCount;
     }
 
     /**
@@ -169,7 +117,7 @@ public class Yanny {
      * @return the zero-based task index.
      * @throws YannyException if the task number is missing or invalid.
      */
-    private static int parseTaskIndex(String command, String commandName) throws YannyException {
+    private int parseTaskIndex(String command, String commandName) throws YannyException {
         String taskNumberText = command.length() > commandName.length()
                 ? command.substring(commandName.length()).trim() : "";
         String upperCommandName = commandName.toUpperCase(Locale.ROOT);
@@ -195,31 +143,16 @@ public class Yanny {
      * Rejects a task index that does not refer to a stored task.
      *
      * @param taskIndex the zero-based task index.
-     * @param taskCount the number of tasks currently stored.
      * @param commandName the command being validated.
      * @throws YannyException if no tasks exist or the index is out of range.
      */
-    private static void validateTaskIndex(int taskIndex, int taskCount, String commandName)
-            throws YannyException {
+    private void validateTaskIndex(int taskIndex, String commandName) throws YannyException {
         if (taskCount == 0) {
             throw new YannyException("NO TASKS AVAILABLE. ADD A TASK BEFORE USING " + commandName + ".");
         }
         if (taskIndex >= taskCount) {
             throw new YannyException("TASK NUMBER OUT OF RANGE. USE A NUMBER FROM 1 TO " + taskCount + ".");
         }
-    }
-
-    /** Displays a formatted error for invalid user input. */
-    private static void displayCommandError(YannyException exception) {
-        System.out.println(COMMAND_REJECTED);
-        System.out.println(ERROR_PREFIX + exception.getMessage());
-    }
-
-    /** Displays the shutdown message for Yanny. */
-    private static void displayShutdownMessage() {
-        System.out.println("| YANNY_OS :: SHUTDOWN INITIATED");
-        System.out.println("| OUTPUT > Bye. Hope to see you again!");
-        System.out.println(BORDER);
     }
 
     /**
@@ -229,7 +162,7 @@ public class Yanny {
      * @return the parsed task.
      * @throws YannyException if the command is unrecognized or contains invalid task data.
      */
-    private static Task parseTaskCommand(String command) throws YannyException {
+    private Task parseTaskCommand(String command) throws YannyException {
         if (command.isBlank()) {
             throw new YannyException("COMMAND CANNOT BE EMPTY. ENTER A SUPPORTED COMMAND.");
         }
@@ -257,7 +190,7 @@ public class Yanny {
      * @return the parsed deadline task.
      * @throws YannyException if the description or deadline is invalid.
      */
-    private static Deadline parseDeadline(String commandContent) throws YannyException {
+    private Deadline parseDeadline(String commandContent) throws YannyException {
         int byIndex = findMarker(commandContent, "/by");
         if (byIndex < 0) {
             throw new YannyException("DEADLINE COMMAND REQUIRES: " + DEADLINE_USAGE);
@@ -278,7 +211,7 @@ public class Yanny {
      * @return the parsed event task.
      * @throws YannyException if the description or event values are invalid.
      */
-    private static Event parseEvent(String commandContent) throws YannyException {
+    private Event parseEvent(String commandContent) throws YannyException {
         int fromIndex = findMarker(commandContent, "/from");
         if (fromIndex < 0) {
             throw new YannyException("EVENT COMMAND REQUIRES: " + EVENT_USAGE);
@@ -310,7 +243,7 @@ public class Yanny {
      * @param marker the marker to find.
      * @return the marker index, or {@code -1} when the marker is absent.
      */
-    private static int findMarker(String text, String marker) {
+    private int findMarker(String text, String marker) {
         String lowerText = text.toLowerCase(Locale.ROOT);
         String lowerMarker = marker.toLowerCase(Locale.ROOT);
         int markerIndex = lowerText.indexOf(lowerMarker);
@@ -333,8 +266,7 @@ public class Yanny {
      * @return the trimmed description.
      * @throws YannyException if the description is blank.
      */
-    private static String requireDescription(String text, String taskType)
-            throws YannyException {
+    private String requireDescription(String text, String taskType) throws YannyException {
         String description = text.trim();
         if (description.isBlank()) {
             String usage = switch (taskType) {
