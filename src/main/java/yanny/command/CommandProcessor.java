@@ -1,6 +1,12 @@
-package yanny;
+package yanny.command;
 
 import java.util.Locale;
+
+import yanny.exception.YannyException;
+import yanny.task.Deadline;
+import yanny.task.Event;
+import yanny.task.Task;
+import yanny.task.Todo;
 
 /**
  * Processes user commands and manages the tasks stored by Yanny.

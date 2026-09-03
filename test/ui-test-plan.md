@@ -4,8 +4,10 @@ Run these tests from the repository root after compiling with Java 25:
 
 ```text
 mkdir -p out
-javac -d out src/main/java/yanny/*.java
-python3 .codex/skills/test-ui/scripts/run_ui_tests.py test/ui-test-plan.md
+javac -d out $(find src/main/java -name '*.java')
+python3 .codex/skills/test-ui/scripts/run_ui_tests.py \
+  test/ui-test-plan.md \
+  --program "java -cp out yanny.ui.Yanny"
 ```
 
 Each case runs in a fresh Yanny process. Expected output records stdout only;

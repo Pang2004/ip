@@ -1,6 +1,9 @@
-package yanny;
+package yanny.ui;
 
 import java.util.Scanner;
+
+import yanny.command.CommandProcessor;
+import yanny.exception.YannyException;
 
 /**
  * A simple retro-style command-line task manager.

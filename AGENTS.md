@@ -35,6 +35,31 @@ Use the skill when creating, editing, reviewing, or refactoring any `.java` file
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## Package organization
+
+Keep `src/main/java` as the Java source root. Every package directory below it
+must match the package declaration at the top of each Java file.
+
+Yanny uses the following package structure:
+
+* `yanny.ui` contains the `Yanny` application entry point and CLI display logic.
+* `yanny.command` contains `CommandProcessor`, which parses and executes commands.
+* `yanny.task` contains `Task`, `Todo`, `Deadline`, and `Event` domain classes.
+* `yanny.exception` contains `YannyException` for expected user-input errors.
+
+Compile all source files from the repository root with:
+
+```bash
+mkdir -p out
+javac -d out $(find src/main/java -name '*.java')
+```
+
+Run Yanny with:
+
+```bash
+java -cp out yanny.ui.Yanny
+```
+
 ## Yanny command output format
 
 Keep user-visible command errors consistent with Yanny's terminal style:
@@ -63,7 +88,7 @@ Use the skill's standard runner from the repository root:
 ```bash
 python3 .codex/skills/test-ui/scripts/run_ui_tests.py \
   test/ui-test-plan.md \
-  --program "java -cp out yanny.Yanny"
+  --program "java -cp out yanny.ui.Yanny"
 ```
 
 Compile the application with Java 25 before invoking the runner when the
