@@ -7,7 +7,9 @@ mkdir -p out
 javac -d out $(find src/main/java -name '*.java')
 python3 .codex/skills/test-ui/scripts/run_ui_tests.py \
   test/ui-test-plan.md \
-  --program "java -cp out yanny.ui.Yanny"
+  --program "bash test/run-yanny-isolated.sh"
+bash test/persistence-read-test.sh
+bash test/persistence-error-test.sh
 ```
 
 Each case runs in a fresh Yanny process. Expected output records stdout only;
@@ -582,6 +584,52 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 +------------------------------------------+
 | YANNY_OS :: TASK LIST
 | 1. [T][ ] buy milk
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
+## Test case: Reject values that would corrupt task storage
+
+### Aim
+
+Verify that the storage delimiter is rejected in task descriptions instead of
+creating a task file that cannot be loaded on the next startup.
+
+### Inputs
+
+```text
+todo contains | delimiter
+list
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo contains | delimiter
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > TODO DESCRIPTION CONTAINS AN UNSUPPORTED CHARACTER. REMOVE '|'.
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: TASK LIST
+| OUTPUT > NO TASKS STORED
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: SHUTDOWN INITIATED

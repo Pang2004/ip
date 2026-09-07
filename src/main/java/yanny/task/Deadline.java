@@ -23,6 +23,15 @@ public class Deadline extends Task {
     }
 
     /**
+     * Returns the deadline value for this task.
+     *
+     * @return the deadline date or time.
+     */
+    public String getDeadline() {
+        return deadline;
+    }
+
+    /**
      * Returns the deadline task including its deadline.
      *
      * @return the formatted deadline task.
