@@ -1,10 +1,12 @@
 package yanny.command;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import yanny.exception.YannyException;
+import yanny.storage.TaskFileWriter;
 import yanny.task.Deadline;
 import yanny.task.Event;
 import yanny.task.Task;
@@ -20,12 +22,14 @@ public class CommandProcessor {
     private static final String EVENT_USAGE = "EVENT <DESCRIPTION> /FROM <START> /TO <END>";
 
     private final List<Task> tasks;
+    private final TaskFileWriter taskFileWriter;
 
     /**
      * Creates a command processor with dynamically sized task storage.
      */
     public CommandProcessor() {
         tasks = new ArrayList<>();
+        taskFileWriter = new TaskFileWriter();
     }
 
     /**
@@ -73,6 +77,7 @@ public class CommandProcessor {
         validateTaskIndex(taskIndex, "MARK");
         Task task = tasks.get(taskIndex);
         task.markAsDone();
+        saveTasks();
         System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
         System.out.println("| OUTPUT > [X] " + task.getDescription());
     }
@@ -83,6 +88,7 @@ public class CommandProcessor {
         validateTaskIndex(taskIndex, "UNMARK");
         Task task = tasks.get(taskIndex);
         task.markAsNotDone();
+        saveTasks();
         System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
         System.out.println("| OUTPUT > [ ] " + task.getDescription());
     }
@@ -99,8 +105,18 @@ public class CommandProcessor {
         System.out.println("| INPUT  >" + inputDisplay);
         Task task = parseTaskCommand(command);
         tasks.add(task);
+        saveTasks();
         System.out.println("| OUTPUT > ADDED: " + task);
         System.out.println("| OUTPUT > CURRENT TASK COUNT: " + tasks.size());
+    }
+
+    /** Saves the current task list and reports file-system failures as user errors. */
+    private void saveTasks() throws YannyException {
+        try {
+            taskFileWriter.saveTasks(tasks);
+        } catch (IOException exception) {
+            throw new YannyException("TASK DATA COULD NOT BE SAVED. CHECK FILE PERMISSIONS.");
+        }
     }
 
     /**

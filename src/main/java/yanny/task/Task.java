@@ -39,6 +39,15 @@ public class Task {
     }
 
     /**
+     * Returns whether this task has been completed.
+     *
+     * @return {@code true} if this task is completed, or {@code false} otherwise.
+     */
+    public boolean isDone() {
+        return isDone;
+    }
+
+    /**
      * Returns the icon representing this task type.
      *
      * @return the task type icon.

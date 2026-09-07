@@ -58,6 +58,52 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 +------------------------------------------+
 ```
 
+## Test case: Write task data after list changes
+
+### Aim
+
+Verify that task creation and completion commands still produce their normal
+responses while writing the current task list to disk.
+
+### Inputs
+
+```text
+todo write task data
+mark 1
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo write task data
+| OUTPUT > ADDED: [T][ ] write task data
+| OUTPUT > CURRENT TASK COUNT: 1
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: MARKED TASK SUCCESSFULLY
+| OUTPUT > [X] write task data
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
 ## Test case: Mark and unmark a Todo
 
 ### Aim
