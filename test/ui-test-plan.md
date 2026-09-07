@@ -58,6 +58,145 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 +------------------------------------------+
 ```
 
+## Test case: Delete tasks and renumber the list
+
+### Aim
+
+Verify that DELETE removes the selected task, REMOVE works as an alias, and
+remaining tasks are renumbered after deletion.
+
+### Inputs
+
+```text
+todo first task
+todo second task
+delete 1
+list
+remove 1
+list
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo first task
+| OUTPUT > ADDED: [T][ ] first task
+| OUTPUT > CURRENT TASK COUNT: 1
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo second task
+| OUTPUT > ADDED: [T][ ] second task
+| OUTPUT > CURRENT TASK COUNT: 2
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: DELETED TASK SUCCESSFULLY
+| OUTPUT > [T][ ] first task
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: TASK LIST
+| 1. [T][ ] second task
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: DELETED TASK SUCCESSFULLY
+| OUTPUT > [T][ ] second task
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: TASK LIST
+| OUTPUT > NO TASKS STORED
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
+## Test case: Reject invalid delete and remove commands
+
+### Aim
+
+Verify that DELETE and REMOVE reject missing, non-numeric, non-positive, and
+out-of-range task numbers.
+
+### Inputs
+
+```text
+delete
+remove abc
+delete 0
+todo keep task
+remove 2
+delete 1
+delete 1
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > DELETE COMMAND REQUIRES A TASK NUMBER. USE: DELETE <NUMBER>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > REMOVE TASK NUMBER MUST BE AN INTEGER. USE: REMOVE <NUMBER>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > DELETE TASK NUMBER MUST BE POSITIVE. USE: DELETE <NUMBER>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo keep task
+| OUTPUT > ADDED: [T][ ] keep task
+| OUTPUT > CURRENT TASK COUNT: 1
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > TASK NUMBER OUT OF RANGE. USE A NUMBER FROM 1 TO 1.
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: DELETED TASK SUCCESSFULLY
+| OUTPUT > [T][ ] keep task
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > NO TASKS AVAILABLE. ADD A TASK BEFORE USING DELETE.
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
 ## Test case: Mark and unmark a Todo
 
 ### Aim
@@ -209,7 +348,7 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 | YANNY_OS :: COMMAND RECEIVED
 | INPUT  > blah
 | YANNY_OS :: COMMAND REJECTED
-| ERROR > UNKNOWN COMMAND DETECTED. USE: TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, OR BYE
+| ERROR > UNKNOWN COMMAND DETECTED. USE: TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, DELETE, REMOVE, OR BYE
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: TASK LIST
