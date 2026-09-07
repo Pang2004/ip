@@ -1,9 +1,13 @@
 package yanny.storage;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +27,22 @@ public class TaskFileWriter {
 
     /** Creates a file helper using the default path or a configured test path. */
     public TaskFileWriter() {
-        String configuredPath = System.getProperty(DATA_FILE_PROPERTY);
-        dataFile = configuredPath == null || configuredPath.isBlank()
-                ? DEFAULT_DATA_FILE : Path.of(configuredPath);
+        String configuredPath;
+        try {
+            configuredPath = System.getProperty(DATA_FILE_PROPERTY);
+        } catch (SecurityException exception) {
+            throw new IllegalArgumentException("The configured task data path is inaccessible.", exception);
+        }
+        if (configuredPath == null || configuredPath.isBlank()) {
+            dataFile = DEFAULT_DATA_FILE;
+            return;
+        }
+
+        try {
+            dataFile = Path.of(configuredPath);
+        } catch (InvalidPathException | SecurityException exception) {
+            throw new IllegalArgumentException("The configured task data path is invalid.", exception);
+        }
     }
 
     /**
@@ -35,16 +52,25 @@ public class TaskFileWriter {
      * @throws IOException if the data directory or file cannot be written.
      */
     public void saveTasks(List<Task> tasks) throws IOException {
-        Path dataDirectory = dataFile.getParent();
-        if (dataDirectory != null) {
-            Files.createDirectories(dataDirectory);
+        if (tasks == null) {
+            throw new IllegalArgumentException("The task list cannot be null.");
         }
+
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
             lines.add(serializeTask(task));
         }
-        Files.write(dataFile, lines, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+        Path dataDirectory = getDataDirectory();
+        Files.createDirectories(dataDirectory);
+        Path temporaryFile = Files.createTempFile(dataDirectory, "yanny-tasks-", ".tmp");
+        try {
+            Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
+                    StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            moveIntoPlace(temporaryFile);
+        } finally {
+            Files.deleteIfExists(temporaryFile);
+        }
     }
 
     /**
@@ -55,14 +81,27 @@ public class TaskFileWriter {
      * @throws IllegalArgumentException if a stored line is not in the expected format.
      */
     public List<Task> loadTasks() throws IOException {
-        if (!Files.exists(dataFile)) {
+        if (Files.notExists(dataFile)) {
             return new ArrayList<>();
+        }
+        if (!Files.isRegularFile(dataFile)) {
+            throw new IOException("The task data path is not a regular file.");
         }
 
         List<Task> tasks = new ArrayList<>();
-        for (String line : Files.readAllLines(dataFile, StandardCharsets.UTF_8)) {
-            if (!line.isBlank()) {
-                tasks.add(parseTask(line));
+        try (BufferedReader reader = Files.newBufferedReader(dataFile, StandardCharsets.UTF_8)) {
+            String line;
+            int lineNumber = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                if (!line.isBlank()) {
+                    try {
+                        tasks.add(parseTask(line));
+                    } catch (IllegalArgumentException exception) {
+                        throw new IllegalArgumentException("Invalid task data on line " + lineNumber
+                                + ": " + exception.getMessage(), exception);
+                    }
+                }
             }
         }
         return tasks;
@@ -75,16 +114,46 @@ public class TaskFileWriter {
      * @return the serialized task line.
      */
     private String serializeTask(Task task) {
+        if (task == null) {
+            throw new IllegalArgumentException("The task list cannot contain null tasks.");
+        }
+
         String status = task.isDone() ? "1" : "0";
+        String description = requireStorageValue(task.getDescription(), "description");
         if (task instanceof Deadline deadline) {
-            return "D | " + status + " | " + task.getDescription()
-                    + " | " + deadline.getDeadline();
+            return "D | " + status + " | " + description
+                    + " | " + requireStorageValue(deadline.getDeadline(), "deadline");
         }
         if (task instanceof Event event) {
-            return "E | " + status + " | " + task.getDescription()
-                    + " | " + event.getStart() + " | " + event.getEnd();
+            return "E | " + status + " | " + description
+                    + " | " + requireStorageValue(event.getStart(), "event start")
+                    + " | " + requireStorageValue(event.getEnd(), "event end");
         }
-        return "T | " + status + " | " + task.getDescription();
+        return "T | " + status + " | " + description;
+    }
+
+    /** Returns the directory in which temporary and final data files are stored. */
+    private Path getDataDirectory() {
+        Path absoluteDataFile = dataFile.toAbsolutePath().normalize();
+        Path fileName = absoluteDataFile.getFileName();
+        if (fileName == null || fileName.toString().isBlank()) {
+            throw new IllegalArgumentException("The task data path must name a file.");
+        }
+        Path dataDirectory = absoluteDataFile.getParent();
+        if (dataDirectory == null) {
+            throw new IllegalArgumentException("The task data path must have a parent directory.");
+        }
+        return dataDirectory;
+    }
+
+    /** Replaces the target file atomically where the file system supports it. */
+    private void moveIntoPlace(Path temporaryFile) throws IOException {
+        try {
+            Files.move(temporaryFile, dataFile, StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException exception) {
+            Files.move(temporaryFile, dataFile, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     /**
@@ -137,10 +206,25 @@ public class TaskFileWriter {
 
     /** Validates and returns a required stored value. */
     private String requireValue(String value, String fieldName) {
+        if (value == null) {
+            throw new IllegalArgumentException("Task " + fieldName + " cannot be null.");
+        }
         String trimmedValue = value.trim();
         if (trimmedValue.isBlank()) {
             throw new IllegalArgumentException("Task " + fieldName + " cannot be empty.");
         }
+        if (trimmedValue.indexOf('|') >= 0 || trimmedValue.indexOf('\u0000') >= 0
+                || trimmedValue.indexOf('\n') >= 0 || trimmedValue.indexOf('\r') >= 0) {
+            throw new IllegalArgumentException("Task " + fieldName + " contains an unsupported character.");
+        }
         return trimmedValue;
+    }
+
+    /** Validates a task value before serializing it into the delimiter-based format. */
+    private String requireStorageValue(String value, String fieldName) {
+        if (value == null) {
+            throw new IllegalArgumentException("Task " + fieldName + " cannot be null.");
+        }
+        return requireValue(value, fieldName);
     }
 }

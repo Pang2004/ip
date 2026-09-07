@@ -31,12 +31,14 @@ public class CommandProcessor {
      */
     public CommandProcessor() throws YannyException {
         tasks = new ArrayList<>();
-        taskFileWriter = new TaskFileWriter();
+        TaskFileWriter writer;
         try {
-            tasks.addAll(taskFileWriter.loadTasks());
-        } catch (IOException | IllegalArgumentException exception) {
+            writer = new TaskFileWriter();
+            tasks.addAll(writer.loadTasks());
+        } catch (IOException | IllegalArgumentException | SecurityException exception) {
             throw new YannyException("TASK DATA COULD NOT BE LOADED. CHECK FILE FORMAT AND PERMISSIONS.");
         }
+        taskFileWriter = writer;
     }
 
     /**
@@ -46,20 +48,23 @@ public class CommandProcessor {
      * @throws YannyException if the command contains invalid user input.
      */
     public void processCommand(String command) throws YannyException {
-        if (command.equalsIgnoreCase("list")) {
+        if (command == null) {
+            throw new YannyException("COMMAND CANNOT BE EMPTY. ENTER A SUPPORTED COMMAND.");
+        }
+        String trimmedCommand = command.trim();
+
+        if (trimmedCommand.equalsIgnoreCase("list")) {
             handleListCommand();
             return;
         }
 
-        if (command.equalsIgnoreCase("mark")
-                || command.toLowerCase(Locale.ROOT).startsWith("mark ")) {
-            handleMarkCommand(command);
+        if (isCommand(trimmedCommand, "mark")) {
+            handleMarkCommand(trimmedCommand);
             return;
         }
 
-        if (command.equalsIgnoreCase("unmark")
-                || command.toLowerCase(Locale.ROOT).startsWith("unmark ")) {
-            handleUnmarkCommand(command);
+        if (isCommand(trimmedCommand, "unmark")) {
+            handleUnmarkCommand(trimmedCommand);
             return;
         }
 
@@ -83,8 +88,14 @@ public class CommandProcessor {
         int taskIndex = parseTaskIndex(command, "mark");
         validateTaskIndex(taskIndex, "MARK");
         Task task = tasks.get(taskIndex);
+        boolean wasDone = task.isDone();
         task.markAsDone();
-        saveTasks();
+        try {
+            saveTasks();
+        } catch (YannyException exception) {
+            restoreTaskStatus(task, wasDone);
+            throw exception;
+        }
         System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
         System.out.println("| OUTPUT > [X] " + task.getDescription());
     }
@@ -94,8 +105,14 @@ public class CommandProcessor {
         int taskIndex = parseTaskIndex(command, "unmark");
         validateTaskIndex(taskIndex, "UNMARK");
         Task task = tasks.get(taskIndex);
+        boolean wasDone = task.isDone();
         task.markAsNotDone();
-        saveTasks();
+        try {
+            saveTasks();
+        } catch (YannyException exception) {
+            restoreTaskStatus(task, wasDone);
+            throw exception;
+        }
         System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
         System.out.println("| OUTPUT > [ ] " + task.getDescription());
     }
@@ -112,7 +129,12 @@ public class CommandProcessor {
         System.out.println("| INPUT  >" + inputDisplay);
         Task task = parseTaskCommand(command);
         tasks.add(task);
-        saveTasks();
+        try {
+            saveTasks();
+        } catch (YannyException exception) {
+            tasks.remove(tasks.size() - 1);
+            throw exception;
+        }
         System.out.println("| OUTPUT > ADDED: " + task);
         System.out.println("| OUTPUT > CURRENT TASK COUNT: " + tasks.size());
     }
@@ -121,9 +143,28 @@ public class CommandProcessor {
     private void saveTasks() throws YannyException {
         try {
             taskFileWriter.saveTasks(tasks);
-        } catch (IOException exception) {
+        } catch (IOException | IllegalArgumentException | SecurityException exception) {
             throw new YannyException("TASK DATA COULD NOT BE SAVED. CHECK FILE PERMISSIONS.");
         }
+    }
+
+    /** Restores a task's completion state after a failed persistence operation. */
+    private void restoreTaskStatus(Task task, boolean wasDone) {
+        if (wasDone) {
+            task.markAsDone();
+        } else {
+            task.markAsNotDone();
+        }
+    }
+
+    /** Returns whether a command is exactly a keyword or starts with whitespace after it. */
+    private boolean isCommand(String command, String keyword) {
+        if (command.length() < keyword.length()
+                || !command.regionMatches(true, 0, keyword, 0, keyword.length())) {
+            return false;
+        }
+        return command.length() == keyword.length()
+                || Character.isWhitespace(command.charAt(keyword.length()));
     }
 
     /**
@@ -180,21 +221,21 @@ public class CommandProcessor {
      * @throws YannyException if the command is unrecognized or contains invalid task data.
      */
     private Task parseTaskCommand(String command) throws YannyException {
-        if (command.isBlank()) {
+        if (command == null || command.isBlank()) {
             throw new YannyException("COMMAND CANNOT BE EMPTY. ENTER A SUPPORTED COMMAND.");
         }
+        String normalizedCommand = command.trim();
 
-        String lowerCommand = command.toLowerCase(Locale.ROOT);
-        if (lowerCommand.equals("todo") || lowerCommand.startsWith("todo ")) {
-            return new Todo(requireDescription(command.substring(4), "TODO"));
+        if (isCommand(normalizedCommand, "todo")) {
+            return new Todo(requireDescription(normalizedCommand.substring(4), "TODO"));
         }
 
-        if (lowerCommand.equals("deadline") || lowerCommand.startsWith("deadline ")) {
-            return parseDeadline(command.substring(8));
+        if (isCommand(normalizedCommand, "deadline")) {
+            return parseDeadline(normalizedCommand.substring(8));
         }
 
-        if (lowerCommand.equals("event") || lowerCommand.startsWith("event ")) {
-            return parseEvent(command.substring(5));
+        if (isCommand(normalizedCommand, "event")) {
+            return parseEvent(normalizedCommand.substring(5));
         }
 
         throw new YannyException("UNKNOWN COMMAND DETECTED. USE: " + SUPPORTED_COMMANDS);
@@ -218,6 +259,7 @@ public class CommandProcessor {
         if (deadline.isBlank()) {
             throw new YannyException("DEADLINE /BY VALUE CANNOT BE EMPTY. USE: " + DEADLINE_USAGE);
         }
+        rejectUnsupportedStorageCharacters(deadline, "DEADLINE /BY VALUE");
         return new Deadline(description, deadline);
     }
 
@@ -250,6 +292,8 @@ public class CommandProcessor {
         if (end.isBlank()) {
             throw new YannyException("EVENT /TO VALUE CANNOT BE EMPTY. USE: " + EVENT_USAGE);
         }
+        rejectUnsupportedStorageCharacters(start, "EVENT /FROM VALUE");
+        rejectUnsupportedStorageCharacters(end, "EVENT /TO VALUE");
         return new Event(description, start, end);
     }
 
@@ -267,7 +311,10 @@ public class CommandProcessor {
         while (markerIndex >= 0) {
             boolean startsAtBoundary = markerIndex == 0
                     || Character.isWhitespace(text.charAt(markerIndex - 1));
-            if (startsAtBoundary) {
+            int markerEnd = markerIndex + marker.length();
+            boolean endsAtBoundary = markerEnd == text.length()
+                    || Character.isWhitespace(text.charAt(markerEnd));
+            if (startsAtBoundary && endsAtBoundary) {
                 return markerIndex;
             }
             markerIndex = lowerText.indexOf(lowerMarker, markerIndex + 1);
@@ -294,6 +341,18 @@ public class CommandProcessor {
             };
             throw new YannyException(taskType + " DESCRIPTION CANNOT BE EMPTY. USE: " + usage);
         }
+        rejectUnsupportedStorageCharacters(description, taskType + " DESCRIPTION");
         return description;
+    }
+
+    /** Rejects values that cannot be represented safely by the task file format. */
+    private void rejectUnsupportedStorageCharacters(String value, String fieldName) throws YannyException {
+        if (value.indexOf('|') >= 0) {
+            throw new YannyException(fieldName + " CONTAINS AN UNSUPPORTED CHARACTER. REMOVE '|'.");
+        }
+        if (value.indexOf('\u0000') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\r') >= 0) {
+            throw new YannyException(fieldName
+                    + " CONTAINS AN UNSUPPORTED CONTROL CHARACTER. USE PLAIN TEXT.");
+        }
     }
 }

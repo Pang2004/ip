@@ -57,7 +57,7 @@ public class Yanny {
             String command = scanner.nextLine();
             System.out.println(BORDER);
 
-            if (command.equalsIgnoreCase("bye")) {
+            if (command.trim().equalsIgnoreCase("bye")) {
                 displayShutdownMessage();
                 break;
             }
