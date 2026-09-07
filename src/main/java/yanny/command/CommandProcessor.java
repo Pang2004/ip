@@ -14,7 +14,8 @@ import yanny.task.Todo;
  * Processes user commands and manages the tasks stored by Yanny.
  */
 public class CommandProcessor {
-    private static final String SUPPORTED_COMMANDS = "TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, OR BYE";
+    private static final String SUPPORTED_COMMANDS =
+            "TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, DELETE, REMOVE, OR BYE";
     private static final String TODO_USAGE = "TODO <DESCRIPTION>";
     private static final String DEADLINE_USAGE = "DEADLINE <DESCRIPTION> /BY <DATE OR TIME>";
     private static final String EVENT_USAGE = "EVENT <DESCRIPTION> /FROM <START> /TO <END>";
@@ -52,6 +53,18 @@ public class CommandProcessor {
             return;
         }
 
+        if (command.equalsIgnoreCase("delete")
+                || command.toLowerCase(Locale.ROOT).startsWith("delete ")) {
+            handleDeleteCommand(command, "delete");
+            return;
+        }
+
+        if (command.equalsIgnoreCase("remove")
+                || command.toLowerCase(Locale.ROOT).startsWith("remove ")) {
+            handleDeleteCommand(command, "remove");
+            return;
+        }
+
         handleAddCommand(command);
     }
 
@@ -85,6 +98,22 @@ public class CommandProcessor {
         task.markAsNotDone();
         System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
         System.out.println("| OUTPUT > [ ] " + task.getDescription());
+    }
+
+    /**
+     * Deletes a task from the collection and displays the removed task.
+     *
+     * @param command the delete or remove command.
+     * @param commandName the command keyword used in validation messages.
+     * @throws YannyException if the task number is missing or invalid.
+     */
+    private void handleDeleteCommand(String command, String commandName) throws YannyException {
+        int taskIndex = parseTaskIndex(command, commandName);
+        String upperCommandName = commandName.toUpperCase(Locale.ROOT);
+        validateTaskIndex(taskIndex, upperCommandName);
+        Task deletedTask = tasks.remove(taskIndex);
+        System.out.println("| YANNY_OS :: DELETED TASK SUCCESSFULLY");
+        System.out.println("| OUTPUT > " + deletedTask);
     }
 
     /**
