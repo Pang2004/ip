@@ -7,7 +7,8 @@ mkdir -p out
 javac -d out $(find src/main/java -name '*.java')
 python3 .codex/skills/test-ui/scripts/run_ui_tests.py \
   test/ui-test-plan.md \
-  --program "java -cp out yanny.ui.Yanny"
+  --program "bash test/run-yanny-isolated.sh"
+bash test/persistence-read-test.sh
 ```
 
 Each case runs in a fresh Yanny process. Expected output records stdout only;

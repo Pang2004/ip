@@ -26,10 +26,17 @@ public class CommandProcessor {
 
     /**
      * Creates a command processor with dynamically sized task storage.
+     *
+     * @throws YannyException if existing task data cannot be loaded.
      */
-    public CommandProcessor() {
+    public CommandProcessor() throws YannyException {
         tasks = new ArrayList<>();
         taskFileWriter = new TaskFileWriter();
+        try {
+            tasks.addAll(taskFileWriter.loadTasks());
+        } catch (IOException | IllegalArgumentException exception) {
+            throw new YannyException("TASK DATA COULD NOT BE LOADED. CHECK FILE FORMAT AND PERMISSIONS.");
+        }
     }
 
     /**

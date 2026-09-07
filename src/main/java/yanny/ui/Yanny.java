@@ -26,9 +26,13 @@ public class Yanny {
      */
     public static void main(String[] args) {
         displayStartupScreen();
-        CommandProcessor commandProcessor = new CommandProcessor();
-        Scanner scanner = new Scanner(System.in);
-        runCommandLoop(scanner, commandProcessor);
+        try {
+            CommandProcessor commandProcessor = new CommandProcessor();
+            Scanner scanner = new Scanner(System.in);
+            runCommandLoop(scanner, commandProcessor);
+        } catch (YannyException exception) {
+            displayCommandError(exception);
+        }
     }
 
     /** Displays the startup message for Yanny. */
