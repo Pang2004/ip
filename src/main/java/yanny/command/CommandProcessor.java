@@ -142,6 +142,12 @@ public class CommandProcessor {
         String upperCommandName = commandName.toUpperCase(Locale.ROOT);
         validateTaskIndex(taskIndex, upperCommandName);
         Task deletedTask = tasks.remove(taskIndex);
+        try {
+            saveTasks();
+        } catch (YannyException exception) {
+            tasks.add(taskIndex, deletedTask);
+            throw exception;
+        }
         System.out.println("| YANNY_OS :: DELETED TASK SUCCESSFULLY");
         System.out.println("| OUTPUT > " + deletedTask);
     }
