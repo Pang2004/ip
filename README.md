@@ -24,3 +24,39 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 ```
 
 **Warning:** Keep `src\main\java` as the source root and place Java files in directories matching their package names, as this is the default location expected by Java tools.
+
+## Building and running the executable JAR
+
+Yanny can be packaged as a self-contained executable (fat) JAR with Gradle's
+Shadow plugin. Java 25 is required.
+
+On macOS/Linux, run this from the project root:
+
+```bash
+./gradlew clean shadowJar
+```
+
+On Windows, run:
+
+```bat
+gradlew.bat clean shadowJar
+```
+
+The generated JAR is written to `build/libs/yanny.jar`. The `build` directory
+and generated JAR are build artifacts and should not be committed to Git.
+
+To run the packaged application, copy `yanny.jar` into an empty directory,
+open a terminal in that directory, and run:
+
+```bash
+java -jar "yanny.jar"
+```
+
+Yanny stores tasks in `./data/yanny.txt`, relative to the directory from which
+the JAR is launched. The `data` directory and file are created automatically
+when the first task is saved.
+
+For distribution, attach `build/libs/yanny.jar` to a GitHub release rather than
+committing the generated binary. Create a release from the merged `master`
+branch, choose a version tag such as `v0.1`, attach the JAR under **Attach
+binaries**, and publish the release.
