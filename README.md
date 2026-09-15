@@ -1,6 +1,6 @@
 # Yanny project template
 
-This is a project template for a greenfield Java project. It's named after the Java mascot _Yanny_. Given below are instructions on how to use it.
+This is a project template for a greenfield Java project. It's named after the creator  of the bot Yan Hern and is appropriately named Yanny_. Given below are instructions on how to use it.
 
 ## Setting up in Intellij
 
@@ -24,6 +24,26 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 ```
 
 **Warning:** Keep `src\main\java` as the source root and place Java files in directories matching their package names, as this is the default location expected by Java tools.
+
+## Command quick reference
+
+Enter these commands after starting Yanny. Replace values in angle brackets with
+your own task details.
+
+| Command | Purpose | Example |
+| --- | --- | --- |
+| `todo <description>` | Add a task without a date or time. | `todo borrow a book` |
+| `deadline <description> /by <date or time>` | Add a task that must be completed by a specified time. | `deadline submit report /by Friday 5pm` |
+| `event <description> /from <start> /to <end>` | Add an event with a start and end. | `event project meeting /from Monday 2pm /to Monday 3pm` |
+| `list` | Display all tasks and their numbers. | `list` |
+| `mark <number>` | Mark a task as completed. | `mark 2` |
+| `unmark <number>` | Mark a task as not completed. | `unmark 2` |
+| `delete <number>` or `remove <number>` | Delete a task. | `delete 2` |
+| `bye` | Exit Yanny. | `bye` |
+
+Use the task numbers displayed by `list` with `mark`, `unmark`, `delete`, and
+`remove`. See the [Yanny User Guide](docs/README.md) for detailed command usage,
+examples, and storage information.
 
 ## Building and running the executable JAR
 
