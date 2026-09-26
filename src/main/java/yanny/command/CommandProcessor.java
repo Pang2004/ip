@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import yanny.exception.YannyException;
-import yanny.storage.TaskFileWriter;
+import yanny.storage.Storage;
 import yanny.task.Task;
 import yanny.task.TaskList;
 import yanny.ui.Ui;
@@ -15,7 +15,7 @@ import yanny.ui.Ui;
 public class CommandProcessor {
     private final Parser parser = new Parser();
     private final TaskList tasks;
-    private final TaskFileWriter taskFileWriter;
+    private final Storage storage;
     private final Ui ui;
 
     /**
@@ -26,15 +26,15 @@ public class CommandProcessor {
      */
     public CommandProcessor(Ui ui) throws YannyException {
         this.ui = ui;
-        TaskFileWriter writer;
+        Storage loadedStorage;
         TaskList loadedTasks;
         try {
-            writer = new TaskFileWriter();
-            loadedTasks = new TaskList(writer.loadTasks());
+            loadedStorage = new Storage();
+            loadedTasks = new TaskList(loadedStorage.loadTasks());
         } catch (IOException | IllegalArgumentException | SecurityException exception) {
             throw new YannyException("TASK DATA COULD NOT BE LOADED. CHECK FILE FORMAT AND PERMISSIONS.");
         }
-        taskFileWriter = writer;
+        storage = loadedStorage;
         tasks = loadedTasks;
     }
 
@@ -132,7 +132,7 @@ public class CommandProcessor {
     /** Saves the current task list and reports file-system failures as user errors. */
     private void saveTasks() throws YannyException {
         try {
-            taskFileWriter.saveTasks(tasks.getTasks());
+            storage.saveTasks(tasks.getTasks());
         } catch (IOException | IllegalArgumentException | SecurityException exception) {
             throw new YannyException("TASK DATA COULD NOT BE SAVED. CHECK FILE PERMISSIONS.");
         }
