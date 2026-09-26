@@ -11,6 +11,7 @@ import yanny.task.Deadline;
 import yanny.task.Event;
 import yanny.task.Task;
 import yanny.task.Todo;
+import yanny.ui.Ui;
 
 /**
  * Processes user commands and manages the tasks stored by Yanny.
@@ -24,13 +25,16 @@ public class CommandProcessor {
 
     private final List<Task> tasks;
     private final TaskFileWriter taskFileWriter;
+    private final Ui ui;
 
     /**
      * Creates a command processor with dynamically sized task storage.
      *
+     * @param ui the terminal interface used to display command results.
      * @throws YannyException if existing task data cannot be loaded.
      */
-    public CommandProcessor() throws YannyException {
+    public CommandProcessor(Ui ui) throws YannyException {
+        this.ui = ui;
         tasks = new ArrayList<>();
         TaskFileWriter writer;
         try {
@@ -86,14 +90,7 @@ public class CommandProcessor {
 
     /** Displays the current tasks and their completion status. */
     private void handleListCommand() {
-        System.out.println("| YANNY_OS :: TASK LIST");
-        if (tasks.isEmpty()) {
-            System.out.println("| OUTPUT > NO TASKS STORED");
-        } else {
-            for (int i = 0; i < tasks.size(); i++) {
-                System.out.println("| " + (i + 1) + ". " + tasks.get(i));
-            }
-        }
+        ui.showTaskList(tasks);
     }
 
     /** Handles a command to mark a task as done. */
@@ -109,8 +106,7 @@ public class CommandProcessor {
             restoreTaskStatus(task, wasDone);
             throw exception;
         }
-        System.out.println("| YANNY_OS :: MARKED TASK SUCCESSFULLY");
-        System.out.println("| OUTPUT > [X] " + task.getDescription());
+        ui.showMarkedTask(task);
     }
 
     /** Handles a command to mark a task as not done. */
@@ -126,8 +122,7 @@ public class CommandProcessor {
             restoreTaskStatus(task, wasDone);
             throw exception;
         }
-        System.out.println("| YANNY_OS :: UNMARKED TASK SUCCESFULLY");
-        System.out.println("| OUTPUT > [ ] " + task.getDescription());
+        ui.showUnmarkedTask(task);
     }
 
     /**
@@ -148,8 +143,7 @@ public class CommandProcessor {
             tasks.add(taskIndex, deletedTask);
             throw exception;
         }
-        System.out.println("| YANNY_OS :: DELETED TASK SUCCESSFULLY");
-        System.out.println("| OUTPUT > " + deletedTask);
+        ui.showDeletedTask(deletedTask);
     }
 
     /**
@@ -159,9 +153,7 @@ public class CommandProcessor {
      * @throws YannyException if the command contains invalid user input.
      */
     private void handleAddCommand(String command) throws YannyException {
-        System.out.println("| YANNY_OS :: COMMAND RECEIVED");
-        String inputDisplay = command.isBlank() ? "" : " " + command;
-        System.out.println("| INPUT  >" + inputDisplay);
+        ui.showCommandReceived(command);
         Task task = parseTaskCommand(command);
         tasks.add(task);
         try {
@@ -170,8 +162,7 @@ public class CommandProcessor {
             tasks.remove(tasks.size() - 1);
             throw exception;
         }
-        System.out.println("| OUTPUT > ADDED: " + task);
-        System.out.println("| OUTPUT > CURRENT TASK COUNT: " + tasks.size());
+        ui.showAddedTask(task, tasks.size());
     }
 
     /** Saves the current task list and reports file-system failures as user errors. */

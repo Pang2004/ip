@@ -16,7 +16,7 @@ public class Yanny {
         Ui ui = new Ui();
         ui.showStartupScreen();
         try {
-            CommandProcessor commandProcessor = new CommandProcessor();
+            CommandProcessor commandProcessor = new CommandProcessor(ui);
             runCommandLoop(ui, commandProcessor);
         } catch (YannyException exception) {
             ui.showCommandError(exception.getMessage());
