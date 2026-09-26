@@ -87,6 +87,24 @@ public class Ui {
     }
 
     /**
+     * Displays matching tasks with their positions in the complete task list.
+     *
+     * @param tasks all stored tasks in list order.
+     * @param matchingIndices zero-based positions of matching tasks.
+     */
+    public void showSearchResults(List<Task> tasks, List<Integer> matchingIndices) {
+        System.out.println("| YANNY_OS :: SEARCH RESULTS");
+        if (matchingIndices.isEmpty()) {
+            System.out.println("| OUTPUT > NO MATCHING TASKS FOUND");
+        } else {
+            System.out.println("| OUTPUT > HERE ARE THE MATCHING TASKS IN YOUR LIST:");
+            for (int index : matchingIndices) {
+                System.out.println("| " + (index + 1) + ". " + tasks.get(index));
+            }
+        }
+    }
+
+    /**
      * Displays a task after it has been marked done.
      *
      * @param task the marked task.

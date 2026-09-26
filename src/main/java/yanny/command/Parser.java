@@ -15,11 +15,11 @@ import yanny.task.Todo;
 public class Parser {
     /** Identifies which existing command handler should process an input line. */
     enum CommandType {
-        LIST, MARK, UNMARK, DELETE, REMOVE, ADD
+        LIST, FIND, MARK, UNMARK, DELETE, REMOVE, ADD
     }
 
     private static final String SUPPORTED_COMMANDS =
-            "TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, DELETE, REMOVE, OR BYE";
+            "TODO, DEADLINE, EVENT, LIST, FIND, MARK, UNMARK, DELETE, REMOVE, OR BYE";
     private static final String TODO_USAGE = "TODO <DESCRIPTION>";
     private static final String DEADLINE_USAGE =
             "DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>";
@@ -41,6 +41,9 @@ public class Parser {
         if (trimmedCommand.equalsIgnoreCase("list")) {
             return CommandType.LIST;
         }
+        if (isCommand(trimmedCommand, "find")) {
+            return CommandType.FIND;
+        }
         if (isCommand(trimmedCommand, "mark")) {
             return CommandType.MARK;
         }
@@ -56,6 +59,21 @@ public class Parser {
             return CommandType.REMOVE;
         }
         return CommandType.ADD;
+    }
+
+    /**
+     * Returns the non-blank description keyword from a find command.
+     *
+     * @param command the complete find command.
+     * @return the trimmed keyword or phrase to search for.
+     * @throws YannyException if no keyword was supplied.
+     */
+    public String parseFindKeyword(String command) throws YannyException {
+        String keyword = command.substring(4).trim();
+        if (keyword.isBlank()) {
+            throw new YannyException("FIND KEYWORD CANNOT BE EMPTY. USE: FIND <KEYWORD>");
+        }
+        return keyword;
     }
 
     /**

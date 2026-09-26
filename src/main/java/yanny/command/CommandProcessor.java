@@ -40,6 +40,7 @@ public class CommandProcessor {
     public void processCommand(String command) throws YannyException {
         switch (parser.parseCommandType(command)) {
         case LIST -> handleListCommand();
+        case FIND -> handleFindCommand(command);
         case MARK -> handleMarkCommand(command.trim());
         case UNMARK -> handleUnmarkCommand(command.trim());
         case DELETE -> handleDeleteCommand(command, "delete");
@@ -51,6 +52,12 @@ public class CommandProcessor {
     /** Displays the current tasks and their completion status. */
     private void handleListCommand() {
         ui.showTaskList(tasks.getTasks());
+    }
+
+    /** Displays tasks whose descriptions contain the supplied keyword. */
+    private void handleFindCommand(String command) throws YannyException {
+        String keyword = parser.parseFindKeyword(command.trim());
+        ui.showSearchResults(tasks.getTasks(), tasks.findMatchingTaskIndices(keyword));
     }
 
     /** Handles a command to mark a task as done. */
