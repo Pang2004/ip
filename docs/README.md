@@ -77,6 +77,19 @@ An incomplete task contains `[ ]`, while a completed task contains `[X]`. Task
 numbers start at 1 and may change when a task is deleted, so run `list` before
 using a command that requires a task number.
 
+## Finding tasks
+
+Use `find <keyword>` to search task descriptions. The search ignores letter
+case and matches a keyword or phrase anywhere in a description.
+
+```text
+find book
+```
+
+Matching tasks retain their numbers from the full list, so you can use those
+numbers with `mark`, `unmark`, `delete`, or `remove`. If nothing matches, Yanny
+shows `NO MATCHING TASKS FOUND`. A blank keyword is rejected.
+
 ## Marking a task as completed
 
 Syntax: `mark <number>`

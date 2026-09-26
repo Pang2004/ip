@@ -36,13 +36,14 @@ your own task details.
 | `deadline <description> /by <yyyy-MM-dd or d/M/yyyy HHmm>` | Add a task due on a date or at a specified time. | `deadline submit report /by 2/12/2019 1800` |
 | `event <description> /from <start> /to <end>` | Add an event with a start and end. | `event project meeting /from Monday 2pm /to Monday 3pm` |
 | `list` | Display all tasks and their numbers. | `list` |
+| `find <keyword>` | Find tasks by text in their descriptions. | `find book` |
 | `mark <number>` | Mark a task as completed. | `mark 2` |
 | `unmark <number>` | Mark a task as not completed. | `unmark 2` |
 | `delete <number>` or `remove <number>` | Delete a task. | `delete 2` |
 | `bye` | Exit Yanny. | `bye` |
 
-Use the task numbers displayed by `list` with `mark`, `unmark`, `delete`, and
-`remove`. See the [Yanny User Guide](docs/README.md) for detailed command usage,
+Use the task numbers displayed by `list` or `find` with `mark`, `unmark`, `delete`,
+and `remove`. See the [Yanny User Guide](docs/README.md) for detailed command usage,
 examples, and storage information.
 
 ## Building and running the executable JAR

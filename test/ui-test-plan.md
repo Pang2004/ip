@@ -350,7 +350,7 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 | YANNY_OS :: COMMAND RECEIVED
 | INPUT  > blah
 | YANNY_OS :: COMMAND REJECTED
-| ERROR > UNKNOWN COMMAND DETECTED. USE: TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, DELETE, REMOVE, OR BYE
+| ERROR > UNKNOWN COMMAND DETECTED. USE: TODO, DEADLINE, EVENT, LIST, FIND, MARK, UNMARK, DELETE, REMOVE, OR BYE
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: TASK LIST
@@ -742,6 +742,160 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 +------------------------------------------+
 | YANNY_OS :: TASK LIST
 | OUTPUT > NO TASKS STORED
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
+## Test case: Find tasks by description
+
+### Aim
+
+Verify case-insensitive keyword and phrase matches, original task numbers, status, and description-only search.
+
+### Inputs
+
+```text
+todo read book
+todo buy milk
+deadline return book /by 2019-12-02
+event meeting /from book room /to 4pm
+mark 1
+mark 3
+find BOOK
+find return book
+list
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo read book
+| OUTPUT > ADDED: [T][ ] read book
+| OUTPUT > CURRENT TASK COUNT: 1
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo buy milk
+| OUTPUT > ADDED: [T][ ] buy milk
+| OUTPUT > CURRENT TASK COUNT: 2
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > deadline return book /by 2019-12-02
+| OUTPUT > ADDED: [D][ ] return book (by: Dec 02 2019)
+| OUTPUT > CURRENT TASK COUNT: 3
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > event meeting /from book room /to 4pm
+| OUTPUT > ADDED: [E][ ] meeting (from: book room to: 4pm)
+| OUTPUT > CURRENT TASK COUNT: 4
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: MARKED TASK SUCCESSFULLY
+| OUTPUT > [X] read book
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: MARKED TASK SUCCESSFULLY
+| OUTPUT > [X] return book
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SEARCH RESULTS
+| OUTPUT > HERE ARE THE MATCHING TASKS IN YOUR LIST:
+| 1. [T][X] read book
+| 3. [D][X] return book (by: Dec 02 2019)
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SEARCH RESULTS
+| OUTPUT > HERE ARE THE MATCHING TASKS IN YOUR LIST:
+| 3. [D][X] return book (by: Dec 02 2019)
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: TASK LIST
+| 1. [T][X] read book
+| 2. [T][ ] buy milk
+| 3. [D][X] return book (by: Dec 02 2019)
+| 4. [E][ ] meeting (from: book room to: 4pm)
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
+## Test case: Reject missing find keyword and show no matches
+
+### Aim
+
+Verify no-match feedback, blank-keyword errors, and the find command boundary.
+
+### Inputs
+
+```text
+todo read book
+find pen
+find
+FIND
+findbook
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > todo read book
+| OUTPUT > ADDED: [T][ ] read book
+| OUTPUT > CURRENT TASK COUNT: 1
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SEARCH RESULTS
+| OUTPUT > NO MATCHING TASKS FOUND
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > FIND KEYWORD CANNOT BE EMPTY. USE: FIND <KEYWORD>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > FIND KEYWORD CANNOT BE EMPTY. USE: FIND <KEYWORD>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > findbook
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > UNKNOWN COMMAND DETECTED. USE: TODO, DEADLINE, EVENT, LIST, FIND, MARK, UNMARK, DELETE, REMOVE, OR BYE
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: SHUTDOWN INITIATED

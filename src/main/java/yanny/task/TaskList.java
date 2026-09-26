@@ -2,6 +2,7 @@ package yanny.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import yanny.exception.YannyException;
 
@@ -27,6 +28,23 @@ public class TaskList {
      */
     public List<Task> getTasks() {
         return List.copyOf(tasks);
+    }
+
+    /**
+     * Finds task positions whose descriptions contain a keyword or phrase.
+     *
+     * @param keyword the case-insensitive text to search for.
+     * @return zero-based positions in their original task-list order.
+     */
+    public List<Integer> findMatchingTaskIndices(String keyword) {
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
+        List<Integer> matchingIndices = new ArrayList<>();
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword)) {
+                matchingIndices.add(i);
+            }
+        }
+        return List.copyOf(matchingIndices);
     }
 
     /**
