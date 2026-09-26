@@ -45,6 +45,11 @@ public class Deadline extends Task {
         this.time = requiredDateTime.toLocalTime();
     }
 
+    /**
+     * Returns the icon representing a dated deadline task.
+     *
+     * @return the deadline task type icon.
+     */
     @Override
     public String getTypeIcon() {
         return "D";
