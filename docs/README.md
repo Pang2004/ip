@@ -6,7 +6,7 @@ start the application from the same directory.
 
 ## Getting started
 
-Follow the [build and run instructions](../README.md#building-and-running-the-executable-jar)
+Follow the [build and run instructions](https://github.com/Pang2004/ip#building-and-running-the-executable-jar)
 to create and start `yanny.jar`. Once Yanny displays
 `SYSTEM READY. AWAITING COMMAND...`, type a command and press Enter.
 
