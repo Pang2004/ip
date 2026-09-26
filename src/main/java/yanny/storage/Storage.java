@@ -20,13 +20,13 @@ import yanny.task.Todo;
 /**
  * Reads and writes Yanny's task list in a local data file.
  */
-public class TaskFileWriter {
+public class Storage {
     private static final String DATA_FILE_PROPERTY = "yanny.data.file";
     private static final Path DEFAULT_DATA_FILE = Path.of("data", "yanny.txt");
     private final Path dataFile;
 
-    /** Creates a file helper using the default path or a configured test path. */
-    public TaskFileWriter() {
+    /** Creates storage using the default path or a configured test path. */
+    public Storage() {
         String configuredPath;
         try {
             configuredPath = System.getProperty(DATA_FILE_PROPERTY);
