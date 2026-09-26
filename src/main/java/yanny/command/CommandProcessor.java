@@ -19,23 +19,16 @@ public class CommandProcessor {
     private final Ui ui;
 
     /**
-     * Creates a command processor with dynamically sized task storage.
+     * Creates a command processor for the supplied task list and storage.
      *
      * @param ui the terminal interface used to display command results.
-     * @throws YannyException if existing task data cannot be loaded.
+     * @param storage the component that saves task changes.
+     * @param tasks the task list to process commands against.
      */
-    public CommandProcessor(Ui ui) throws YannyException {
+    public CommandProcessor(Ui ui, Storage storage, TaskList tasks) {
         this.ui = ui;
-        Storage loadedStorage;
-        TaskList loadedTasks;
-        try {
-            loadedStorage = new Storage();
-            loadedTasks = new TaskList(loadedStorage.loadTasks());
-        } catch (IOException | IllegalArgumentException | SecurityException exception) {
-            throw new YannyException("TASK DATA COULD NOT BE LOADED. CHECK FILE FORMAT AND PERMISSIONS.");
-        }
-        storage = loadedStorage;
-        tasks = loadedTasks;
+        this.storage = storage;
+        this.tasks = tasks;
     }
 
     /**
