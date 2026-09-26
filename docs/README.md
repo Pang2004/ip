@@ -1,147 +1,87 @@
 # Yanny User Guide
 
-Yanny is a command-line task manager for recording Todos, Deadlines, and Events.
-It saves changes automatically, so your tasks are available the next time you
-start the application from the same directory.
+Yanny is a command-line task manager for Todos, Deadlines, and Events. It saves
+your tasks automatically so they are available the next time you start it.
 
-## Getting started
+## Get started
 
-Follow the [build and run instructions](https://github.com/Pang2004/ip#building-and-running-the-executable-jar)
-to create and start `yanny.jar`. Once Yanny displays
-`SYSTEM READY. AWAITING COMMAND...`, type a command and press Enter.
+Yanny requires Java 25. Follow the [build instructions](https://github.com/Pang2004/ip#building-and-running-the-executable-jar)
+to create `yanny.jar`. Copy it into a folder where you want to keep your tasks,
+open a terminal there, and run:
 
-In the syntax examples below, text in angle brackets describes a value that you
-must replace. Do not type the angle brackets themselves. Commands and markers
-such as `/by`, `/from`, and `/to` are case-insensitive.
+```bash
+java -jar yanny.jar
+```
 
-## Adding a Todo
+When you see `SYSTEM READY. AWAITING COMMAND...`, enter one command per line.
+Replace placeholders such as `<description>` and `<number>` with your own values.
+Commands and markers such as `/by`, `/from`, and `/to` ignore letter case.
 
-Use a Todo for a task that has no date or time.
+## Add tasks
 
-Syntax: `todo <description>`
+### Todo
 
-Example:
+Use `todo <description>` for a task without a date or time:
 
 ```text
 todo borrow a book
 ```
 
-Yanny adds the task as an incomplete Todo, represented by `[T][ ]`.
+Yanny displays a Todo with `[T]`.
 
-## Adding a Deadline
+### Deadline
 
-Use a Deadline for a task that must be completed by a particular date or time.
-Enter either an ISO date (`yyyy-MM-dd`) or a day/month/year and 24-hour time
-(`d/M/yyyy HHmm`). Invalid dates and times are rejected.
-
-Syntax: `deadline <description> /by <yyyy-MM-dd or d/M/yyyy HHmm>`
-
-Example:
+Use `deadline <description> /by <date>` for a task due on a date. Enter a date
+as `yyyy-MM-dd`, or include a 24-hour time as `d/M/yyyy HHmm`. For example,
+`2/12/2030 1800` means 2 December 2030 at 6:00 PM.
 
 ```text
-deadline submit report /by 2019-10-15
-deadline return book /by 2/12/2019 1800
+deadline submit report /by 2030-10-15
+deadline return book /by 2/12/2030 1800
 ```
 
-Yanny adds the task as an incomplete Deadline, represented by `[D][ ]`, and
-displays its date as `Oct 15 2019` or its date and time as
-`Dec 02 2019 6:00 PM`. Older deadlines saved as free text still load and
-display their original value.
+Yanny displays these dates as `Oct 15 2030` and `Dec 02 2030 6:00 PM`.
+Invalid dates and times are rejected. Older free-text deadlines already in your
+saved tasks still display as written.
 
-## Adding an Event
+### Event
 
-Use an Event for an activity with a start and an end. The values after `/from`
-and `/to` are stored as entered.
-
-Syntax: `event <description> /from <start> /to <end>`
-
-Example:
+Use `event <description> /from <start> /to <end>` for an activity with a start
+and end:
 
 ```text
 event project meeting /from Monday 2pm /to Monday 3pm
 ```
 
-Yanny adds the task as an incomplete Event, represented by `[E][ ]`, and
-displays its start and end values with the task.
+Yanny displays an Event with `[E]`. Start and end values appear as entered.
 
-## Listing tasks
-
-Use `list` to display every stored task, its completion status, and its current
-number.
+## View and find tasks
 
 ```text
 list
-```
-
-An incomplete task contains `[ ]`, while a completed task contains `[X]`. Task
-numbers start at 1 and may change when a task is deleted, so run `list` before
-using a command that requires a task number.
-
-## Finding tasks
-
-Use `find <keyword>` to search task descriptions. The search ignores letter
-case and matches a keyword or phrase anywhere in a description.
-
-```text
 find book
 ```
 
-Matching tasks retain their numbers from the full list, so you can use those
-numbers with `mark`, `unmark`, `delete`, or `remove`. If nothing matches, Yanny
-shows `NO MATCHING TASKS FOUND`. A blank keyword is rejected.
+`list` shows every task. `find` searches task descriptions for a word or phrase,
+ignoring letter case. Search results keep their original task numbers; a task
+shown as number 3 can still be used with `mark 3` or `delete 3`.
 
-## Marking a task as completed
+`[T]`, `[D]`, and `[E]` mean Todo, Deadline, and Event. `[ ]` means incomplete;
+`[X]` means completed. Task numbers begin at 1 and change after deletion.
 
-Syntax: `mark <number>`
+## Update tasks
 
-Example:
+Use a task number from `list` or `find`:
 
-```text
-mark 2
-```
+| Command | Result |
+| --- | --- |
+| `mark 2` | Mark task 2 as completed. |
+| `unmark 2` | Mark task 2 as incomplete again. |
+| `delete 2` | Permanently remove task 2 and renumber the list. |
+| `remove 2` | Do the same as `delete 2`. |
 
-Yanny marks task 2 as completed. The task will contain `[X]` when displayed.
+## Exit and saved tasks
 
-## Marking a task as incomplete
-
-Syntax: `unmark <number>`
-
-Example:
-
-```text
-unmark 2
-```
-
-Yanny marks task 2 as incomplete again. The task will contain `[ ]` when
-displayed.
-
-## Deleting a task
-
-Syntax: `delete <number>`
-
-Example:
-
-```text
-delete 2
-```
-
-Yanny permanently removes task 2 and renumbers the remaining tasks. `remove`
-is an alias for `delete`, so `remove 2` has the same effect.
-
-## Exiting Yanny
-
-Enter `bye` to close the application safely.
-
-```text
-bye
-```
-
-## Saving task data
-
-Yanny automatically loads and saves tasks in `data/yanny.txt`, relative to the
-directory from which the application is launched. The `data` directory and
-file are created when the first task is saved.
-
-Descriptions and Event start/end values accept plain text, but they cannot
-contain the `|` character because Yanny uses it to separate values in the
-storage file. New Deadline values must use one of the date formats above.
+Enter `bye` to close Yanny. It saves tasks in `data/yanny.txt` in the directory
+from which you run it, and loads them when you start it there again.
+Descriptions and Event start/end values cannot contain `|`.
