@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import yanny.exception.YannyException;
 import yanny.task.Deadline;
+import yanny.task.DeadlineDateParser;
 import yanny.task.Event;
 import yanny.task.Task;
 import yanny.task.Todo;
@@ -20,7 +21,8 @@ public class Parser {
     private static final String SUPPORTED_COMMANDS =
             "TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, DELETE, REMOVE, OR BYE";
     private static final String TODO_USAGE = "TODO <DESCRIPTION>";
-    private static final String DEADLINE_USAGE = "DEADLINE <DESCRIPTION> /BY <DATE OR TIME>";
+    private static final String DEADLINE_USAGE =
+            "DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>";
     private static final String EVENT_USAGE = "EVENT <DESCRIPTION> /FROM <START> /TO <END>";
 
     /**
@@ -149,7 +151,11 @@ public class Parser {
             throw new YannyException("DEADLINE /BY VALUE CANNOT BE EMPTY. USE: " + DEADLINE_USAGE);
         }
         rejectUnsupportedStorageCharacters(deadline, "DEADLINE /BY VALUE");
-        return new Deadline(description, deadline);
+        try {
+            return DeadlineDateParser.parse(description, deadline);
+        } catch (IllegalArgumentException exception) {
+            throw new YannyException("DEADLINE /BY VALUE MUST BE A VALID DATE OR TIME. USE: " + DEADLINE_USAGE);
+        }
     }
 
     /**
