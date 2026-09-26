@@ -31,18 +31,22 @@ Yanny adds the task as an incomplete Todo, represented by `[T][ ]`.
 ## Adding a Deadline
 
 Use a Deadline for a task that must be completed by a particular date or time.
-The value after `/by` is stored as entered.
+Enter either an ISO date (`yyyy-MM-dd`) or a day/month/year and 24-hour time
+(`d/M/yyyy HHmm`). Invalid dates and times are rejected.
 
-Syntax: `deadline <description> /by <date or time>`
+Syntax: `deadline <description> /by <yyyy-MM-dd or d/M/yyyy HHmm>`
 
 Example:
 
 ```text
-deadline submit report /by Friday 5pm
+deadline submit report /by 2019-10-15
+deadline return book /by 2/12/2019 1800
 ```
 
 Yanny adds the task as an incomplete Deadline, represented by `[D][ ]`, and
-displays its `/by` value with the task.
+displays its date as `Oct 15 2019` or its date and time as
+`Dec 02 2019 6:00 PM`. Older deadlines saved as free text still load and
+display their original value.
 
 ## Adding an Event
 
@@ -125,5 +129,6 @@ Yanny automatically loads and saves tasks in `data/yanny.txt`, relative to the
 directory from which the application is launched. The `data` directory and
 file are created when the first task is saved.
 
-Descriptions and date or time values accept plain text, but they cannot contain
-the `|` character because Yanny uses it to separate values in the storage file.
+Descriptions and Event start/end values accept plain text, but they cannot
+contain the `|` character because Yanny uses it to separate values in the
+storage file. New Deadline values must use one of the date formats above.

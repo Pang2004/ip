@@ -9,11 +9,14 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import yanny.task.Deadline;
+import yanny.task.DeadlineDateParser;
 import yanny.task.Event;
+import yanny.task.LegacyDeadline;
 import yanny.task.Task;
 import yanny.task.Todo;
 
@@ -121,8 +124,15 @@ public class Storage {
         String status = task.isDone() ? "1" : "0";
         String description = requireStorageValue(task.getDescription(), "description");
         if (task instanceof Deadline deadline) {
+            String storedDeadline = deadline.getTime()
+                    .map(time -> LocalDateTime.of(deadline.getDate(), time).toString())
+                    .orElseGet(() -> deadline.getDate().toString());
             return "D | " + status + " | " + description
-                    + " | " + requireStorageValue(deadline.getDeadline(), "deadline");
+                    + " | " + requireStorageValue(storedDeadline, "deadline");
+        }
+        if (task instanceof LegacyDeadline deadline) {
+            return "D | " + status + " | " + description
+                    + " | " + requireStorageValue(deadline.getDeadlineText(), "deadline");
         }
         if (task instanceof Event event) {
             return "E | " + status + " | " + description
@@ -178,8 +188,13 @@ public class Storage {
         }
         case "D" -> {
             requireFieldCount(fields, 4, type);
-            task = new Deadline(requireValue(fields[2], "description"),
-                    requireValue(fields[3], "deadline"));
+            String description = requireValue(fields[2], "description");
+            String deadlineValue = requireValue(fields[3], "deadline");
+            try {
+                task = DeadlineDateParser.parseStored(description, deadlineValue);
+            } catch (IllegalArgumentException exception) {
+                task = new LegacyDeadline(description, deadlineValue);
+            }
         }
         case "E" -> {
             requireFieldCount(fields, 5, type);

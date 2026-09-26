@@ -259,13 +259,13 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 
 ### Aim
 
-Verify that deadline and event commands preserve date/time values containing
-spaces and display their type-specific details.
+Verify that a deadline date and time is parsed and displayed in a different
+format, while event values keep their existing text behavior.
 
 ### Inputs
 
 ```text
-deadline return book /by Sunday
+deadline return book /by 2/12/2019 1800
 event project meeting /from Mon 2pm /to 4pm
 list
 bye
@@ -288,8 +288,8 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: COMMAND RECEIVED
-| INPUT  > deadline return book /by Sunday
-| OUTPUT > ADDED: [D][ ] return book (by: Sunday)
+| INPUT  > deadline return book /by 2/12/2019 1800
+| OUTPUT > ADDED: [D][ ] return book (by: Dec 02 2019 6:00 PM)
 | OUTPUT > CURRENT TASK COUNT: 1
 +------------------------------------------+
 +------------------------------------------+
@@ -300,7 +300,7 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: TASK LIST
-| 1. [D][ ] return book (by: Sunday)
+| 1. [D][ ] return book (by: Dec 02 2019 6:00 PM)
 | 2. [E][ ] project meeting (from: Mon 2pm to: 4pm)
 +------------------------------------------+
 +------------------------------------------+
@@ -441,19 +441,19 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 | YANNY_OS :: COMMAND RECEIVED
 | INPUT  > deadline buy milk
 | YANNY_OS :: COMMAND REJECTED
-| ERROR > DEADLINE COMMAND REQUIRES: DEADLINE <DESCRIPTION> /BY <DATE OR TIME>
+| ERROR > DEADLINE COMMAND REQUIRES: DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: COMMAND RECEIVED
 | INPUT  > deadline /by tomorrow
 | YANNY_OS :: COMMAND REJECTED
-| ERROR > DEADLINE DESCRIPTION CANNOT BE EMPTY. USE: DEADLINE <DESCRIPTION> /BY <DATE OR TIME>
+| ERROR > DEADLINE DESCRIPTION CANNOT BE EMPTY. USE: DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: COMMAND RECEIVED
 | INPUT  > deadline buy milk /by
 | YANNY_OS :: COMMAND REJECTED
-| ERROR > DEADLINE /BY VALUE CANNOT BE EMPTY. USE: DEADLINE <DESCRIPTION> /BY <DATE OR TIME>
+| ERROR > DEADLINE /BY VALUE CANNOT BE EMPTY. USE: DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: COMMAND RECEIVED
@@ -626,6 +626,118 @@ ____    ____  ___      .__   __. .__   __. ____    ____
 | INPUT  > todo contains | delimiter
 | YANNY_OS :: COMMAND REJECTED
 | ERROR > TODO DESCRIPTION CONTAINS AN UNSUPPORTED CHARACTER. REMOVE '|'.
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: TASK LIST
+| OUTPUT > NO TASKS STORED
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
+## Test case: Parse and display ISO deadline dates
+
+### Aim
+
+Verify that ISO dates, including leap day, are stored as dates and displayed in a readable format.
+
+### Inputs
+
+```text
+deadline submit report /by 2019-10-15
+deadline renew pass /by 2020-02-29
+list
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > deadline submit report /by 2019-10-15
+| OUTPUT > ADDED: [D][ ] submit report (by: Oct 15 2019)
+| OUTPUT > CURRENT TASK COUNT: 1
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > deadline renew pass /by 2020-02-29
+| OUTPUT > ADDED: [D][ ] renew pass (by: Feb 29 2020)
+| OUTPUT > CURRENT TASK COUNT: 2
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: TASK LIST
+| 1. [D][ ] submit report (by: Oct 15 2019)
+| 2. [D][ ] renew pass (by: Feb 29 2020)
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: SHUTDOWN INITIATED
+| OUTPUT > Bye. Hope to see you again!
++------------------------------------------+
+```
+
+## Test case: Reject invalid deadline dates and times
+
+### Aim
+
+Verify that impossible dates, invalid times, and old free-text input are rejected without adding tasks.
+
+### Inputs
+
+```text
+deadline wrong leap day /by 2019-02-29
+deadline wrong time /by 2/12/2019 2460
+deadline old format /by Sunday
+list
+bye
+```
+
+### Expected output
+
+```text
++------------------------------------------+
+| YANNY_OS :: BOOT SEQUENCE COMPLETE
+____    ____  ___      .__   __. .__   __. ____    ____
+\   \  /   / /   \     |  \ |  | |  \ |  | \   \  /   /
+ \   \/   / /  ^  \    |   \|  | |   \|  |  \   \/   /
+  \_    _/ /  /_\  \   |  . `  | |  . `  |   \_    _/
+    |  |  /  _____  \  |  |\   | |  |\   |     |  |
+    |__| /__/     \__\ |__| \__| |__| \__|     |__|
+
+| GREETINGS I'M YANNY.
+| SYSTEM READY. AWAITING COMMAND...
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > deadline wrong leap day /by 2019-02-29
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > DEADLINE /BY VALUE MUST BE A VALID DATE OR TIME. USE: DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > deadline wrong time /by 2/12/2019 2460
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > DEADLINE /BY VALUE MUST BE A VALID DATE OR TIME. USE: DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>
++------------------------------------------+
++------------------------------------------+
+| YANNY_OS :: COMMAND RECEIVED
+| INPUT  > deadline old format /by Sunday
+| YANNY_OS :: COMMAND REJECTED
+| ERROR > DEADLINE /BY VALUE MUST BE A VALID DATE OR TIME. USE: DEADLINE <DESCRIPTION> /BY <YYYY-MM-DD OR D/M/YYYY HHMM>
 +------------------------------------------+
 +------------------------------------------+
 | YANNY_OS :: TASK LIST

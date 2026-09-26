@@ -33,7 +33,7 @@ your own task details.
 | Command | Purpose | Example |
 | --- | --- | --- |
 | `todo <description>` | Add a task without a date or time. | `todo borrow a book` |
-| `deadline <description> /by <date or time>` | Add a task that must be completed by a specified time. | `deadline submit report /by Friday 5pm` |
+| `deadline <description> /by <yyyy-MM-dd or d/M/yyyy HHmm>` | Add a task due on a date or at a specified time. | `deadline submit report /by 2/12/2019 1800` |
 | `event <description> /from <start> /to <end>` | Add an event with a start and end. | `event project meeting /from Monday 2pm /to Monday 3pm` |
 | `list` | Display all tasks and their numbers. | `list` |
 | `mark <number>` | Mark a task as completed. | `mark 2` |
