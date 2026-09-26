@@ -45,39 +45,14 @@ public class CommandProcessor {
      * @throws YannyException if the command contains invalid user input.
      */
     public void processCommand(String command) throws YannyException {
-        if (command == null) {
-            throw new YannyException("COMMAND CANNOT BE EMPTY. ENTER A SUPPORTED COMMAND.");
+        switch (parser.parseCommandType(command)) {
+        case LIST -> handleListCommand();
+        case MARK -> handleMarkCommand(command.trim());
+        case UNMARK -> handleUnmarkCommand(command.trim());
+        case DELETE -> handleDeleteCommand(command, "delete");
+        case REMOVE -> handleDeleteCommand(command, "remove");
+        case ADD -> handleAddCommand(command);
         }
-        String trimmedCommand = command.trim();
-
-        if (trimmedCommand.equalsIgnoreCase("list")) {
-            handleListCommand();
-            return;
-        }
-
-        if (parser.isCommand(trimmedCommand, "mark")) {
-            handleMarkCommand(trimmedCommand);
-            return;
-        }
-
-        if (parser.isCommand(trimmedCommand, "unmark")) {
-            handleUnmarkCommand(trimmedCommand);
-            return;
-        }
-
-        if (command.equalsIgnoreCase("delete")
-                || command.toLowerCase(Locale.ROOT).startsWith("delete ")) {
-            handleDeleteCommand(command, "delete");
-            return;
-        }
-
-        if (command.equalsIgnoreCase("remove")
-                || command.toLowerCase(Locale.ROOT).startsWith("remove ")) {
-            handleDeleteCommand(command, "remove");
-            return;
-        }
-
-        handleAddCommand(command);
     }
 
     /** Displays the current tasks and their completion status. */

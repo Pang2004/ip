@@ -12,11 +12,49 @@ import yanny.task.Todo;
  * Interprets task commands and validates their input values.
  */
 public class Parser {
+    /** Identifies which existing command handler should process an input line. */
+    enum CommandType {
+        LIST, MARK, UNMARK, DELETE, REMOVE, ADD
+    }
+
     private static final String SUPPORTED_COMMANDS =
             "TODO, DEADLINE, EVENT, LIST, MARK, UNMARK, DELETE, REMOVE, OR BYE";
     private static final String TODO_USAGE = "TODO <DESCRIPTION>";
     private static final String DEADLINE_USAGE = "DEADLINE <DESCRIPTION> /BY <DATE OR TIME>";
     private static final String EVENT_USAGE = "EVENT <DESCRIPTION> /FROM <START> /TO <END>";
+
+    /**
+     * Identifies the handler for a command while preserving its original text.
+     *
+     * @param command the complete command entered by the user.
+     * @return the command type used for dispatch.
+     * @throws YannyException if the command is null.
+     */
+    CommandType parseCommandType(String command) throws YannyException {
+        if (command == null) {
+            throw new YannyException("COMMAND CANNOT BE EMPTY. ENTER A SUPPORTED COMMAND.");
+        }
+        String trimmedCommand = command.trim();
+
+        if (trimmedCommand.equalsIgnoreCase("list")) {
+            return CommandType.LIST;
+        }
+        if (isCommand(trimmedCommand, "mark")) {
+            return CommandType.MARK;
+        }
+        if (isCommand(trimmedCommand, "unmark")) {
+            return CommandType.UNMARK;
+        }
+        if (command.equalsIgnoreCase("delete")
+                || command.toLowerCase(Locale.ROOT).startsWith("delete ")) {
+            return CommandType.DELETE;
+        }
+        if (command.equalsIgnoreCase("remove")
+                || command.toLowerCase(Locale.ROOT).startsWith("remove ")) {
+            return CommandType.REMOVE;
+        }
+        return CommandType.ADD;
+    }
 
     /**
      * Returns whether a command is exactly a keyword or starts with whitespace after it.
@@ -25,7 +63,7 @@ public class Parser {
      * @param keyword the expected command keyword.
      * @return true if the keyword matches at a command boundary.
      */
-    public boolean isCommand(String command, String keyword) {
+    private boolean isCommand(String command, String keyword) {
         if (command.length() < keyword.length()
                 || !command.regionMatches(true, 0, keyword, 0, keyword.length())) {
             return false;
