@@ -1,13 +1,12 @@
 package yanny.command;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import yanny.exception.YannyException;
 import yanny.storage.TaskFileWriter;
 import yanny.task.Task;
+import yanny.task.TaskList;
 import yanny.ui.Ui;
 
 /**
@@ -15,7 +14,7 @@ import yanny.ui.Ui;
  */
 public class CommandProcessor {
     private final Parser parser = new Parser();
-    private final List<Task> tasks;
+    private final TaskList tasks;
     private final TaskFileWriter taskFileWriter;
     private final Ui ui;
 
@@ -27,15 +26,16 @@ public class CommandProcessor {
      */
     public CommandProcessor(Ui ui) throws YannyException {
         this.ui = ui;
-        tasks = new ArrayList<>();
         TaskFileWriter writer;
+        TaskList loadedTasks;
         try {
             writer = new TaskFileWriter();
-            tasks.addAll(writer.loadTasks());
+            loadedTasks = new TaskList(writer.loadTasks());
         } catch (IOException | IllegalArgumentException | SecurityException exception) {
             throw new YannyException("TASK DATA COULD NOT BE LOADED. CHECK FILE FORMAT AND PERMISSIONS.");
         }
         taskFileWriter = writer;
+        tasks = loadedTasks;
     }
 
     /**
@@ -57,14 +57,13 @@ public class CommandProcessor {
 
     /** Displays the current tasks and their completion status. */
     private void handleListCommand() {
-        ui.showTaskList(tasks);
+        ui.showTaskList(tasks.getTasks());
     }
 
     /** Handles a command to mark a task as done. */
     private void handleMarkCommand(String command) throws YannyException {
         int taskIndex = parser.parseTaskIndex(command, "mark");
-        validateTaskIndex(taskIndex, "MARK");
-        Task task = tasks.get(taskIndex);
+        Task task = tasks.getTask(taskIndex, "MARK");
         boolean wasDone = task.isDone();
         task.markAsDone();
         try {
@@ -79,8 +78,7 @@ public class CommandProcessor {
     /** Handles a command to mark a task as not done. */
     private void handleUnmarkCommand(String command) throws YannyException {
         int taskIndex = parser.parseTaskIndex(command, "unmark");
-        validateTaskIndex(taskIndex, "UNMARK");
-        Task task = tasks.get(taskIndex);
+        Task task = tasks.getTask(taskIndex, "UNMARK");
         boolean wasDone = task.isDone();
         task.markAsNotDone();
         try {
@@ -102,12 +100,11 @@ public class CommandProcessor {
     private void handleDeleteCommand(String command, String commandName) throws YannyException {
         int taskIndex = parser.parseTaskIndex(command, commandName);
         String upperCommandName = commandName.toUpperCase(Locale.ROOT);
-        validateTaskIndex(taskIndex, upperCommandName);
-        Task deletedTask = tasks.remove(taskIndex);
+        Task deletedTask = tasks.deleteTask(taskIndex, upperCommandName);
         try {
             saveTasks();
         } catch (YannyException exception) {
-            tasks.add(taskIndex, deletedTask);
+            tasks.restoreTask(taskIndex, deletedTask);
             throw exception;
         }
         ui.showDeletedTask(deletedTask);
@@ -122,11 +119,11 @@ public class CommandProcessor {
     private void handleAddCommand(String command) throws YannyException {
         ui.showCommandReceived(command);
         Task task = parser.parseTaskCommand(command);
-        tasks.add(task);
+        tasks.addTask(task);
         try {
             saveTasks();
         } catch (YannyException exception) {
-            tasks.remove(tasks.size() - 1);
+            tasks.removeLastTask();
             throw exception;
         }
         ui.showAddedTask(task, tasks.size());
@@ -135,7 +132,7 @@ public class CommandProcessor {
     /** Saves the current task list and reports file-system failures as user errors. */
     private void saveTasks() throws YannyException {
         try {
-            taskFileWriter.saveTasks(tasks);
+            taskFileWriter.saveTasks(tasks.getTasks());
         } catch (IOException | IllegalArgumentException | SecurityException exception) {
             throw new YannyException("TASK DATA COULD NOT BE SAVED. CHECK FILE PERMISSIONS.");
         }
@@ -147,22 +144,6 @@ public class CommandProcessor {
             task.markAsDone();
         } else {
             task.markAsNotDone();
-        }
-    }
-
-    /**
-     * Rejects a task index that does not refer to a stored task.
-     *
-     * @param taskIndex the zero-based task index.
-     * @param commandName the command being validated.
-     * @throws YannyException if no tasks exist or the index is out of range.
-     */
-    private void validateTaskIndex(int taskIndex, String commandName) throws YannyException {
-        if (tasks.isEmpty()) {
-            throw new YannyException("NO TASKS AVAILABLE. ADD A TASK BEFORE USING " + commandName + ".");
-        }
-        if (taskIndex >= tasks.size()) {
-            throw new YannyException("TASK NUMBER OUT OF RANGE. USE A NUMBER FROM 1 TO " + tasks.size() + ".");
         }
     }
 }
