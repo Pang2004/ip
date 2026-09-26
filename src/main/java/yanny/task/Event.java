@@ -20,6 +20,11 @@ public class Event extends Task {
         this.end = end;
     }
 
+    /**
+     * Returns the icon representing an event task.
+     *
+     * @return the event task type icon.
+     */
     @Override
     public String getTypeIcon() {
         return "E";

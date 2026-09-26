@@ -17,6 +17,11 @@ public class LegacyDeadline extends Task {
         this.deadlineText = deadlineText;
     }
 
+    /**
+     * Returns the deadline icon for an older free-text task.
+     *
+     * @return the deadline task type icon.
+     */
     @Override
     public String getTypeIcon() {
         return "D";
